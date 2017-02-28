@@ -46,6 +46,8 @@ public class Main {
                         latestUrl = null;
                     }
                 } catch (Exception ex) {
+                    latestMac = null;
+                    latestUrl = null;
                     System.err.println("Exception caught!");
                     ex.printStackTrace();
                 }
@@ -59,7 +61,7 @@ public class Main {
     }
 
     private static void handleMeasurement(String mac, String base64) {
-        byte[] data = Base64.getDecoder().decode(base64);
+        byte[] data = Base64.getDecoder().decode(base64.replace('-', '+').replace('_', '/')); // Ruuvi uses URL-safe Base64, convert that to "traditional" Base64
         float humidity = ((float) (data[1] & 0xFF)) / 2f;
         int temperatureSign = (data[2] >> 7) & 1;
         int temperatureBase = (data[2] & 0x7F);
