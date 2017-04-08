@@ -1,0 +1,17 @@
+# These are the defaults
+# Uncomment the line and change accordingly if you need
+
+# Base url to connect to, including protocol, hostname or ip address, and port
+#influxUrlBase = http://localhost:8086
+
+# InfluxDB Database to use for measurements
+#influxDatabase=ruuvi
+
+# Username and password to use in influxdb. These can be ignored if you don't use authentication in InfluxDB.
+#influxUser=ruuvi
+#influxPassword=ruuvi
+
+# Minimum interval in milliseconds for measurements per measurement type per tag.
+# This is to avoid saving too many measurements especially with the default firmware which sends measurements every 0.5 seconds
+# For example 9900 means post at most one measurement type per tag per 9.9 seconds
+#influxUpdateLimit=9900
