@@ -22,9 +22,6 @@ public class InfluxDBConnection {
     }
 
     public boolean post(InfluxDBData measurement) {
-        System.out.println("::::");
-        System.out.println(measurement);
-        System.out.println("::__");
         try {
             HttpURLConnection con = (HttpURLConnection) new URL(influxUrl).openConnection();
             con.setDoOutput(true);
