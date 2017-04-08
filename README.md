@@ -26,10 +26,12 @@ TODO: Service scripts and other necessary stuff for "properly installing" this w
 For now, you can do the following to the this up and running:
 
 - hcitool and hcidump require additional capabilities, so you need to execute the following commands or run the application as root
+
 ```sh
 sudo setcap 'cap_net_raw,cap_net_admin+eip' `which hcitool`
 sudo setcap 'cap_net_raw,cap_net_admin+eip' `which hcidump`
 ```
+
 - Run the built JAR-file with `java -jar ruuvi-collector-0.1.jar`. Note: as there is no service scripts yet, it's recommended to run this for example inside *screen* to avoid the application being killed when terminal session ends
 - To configure the settings, copy the `ruuvi-collector.properties.example` to `ruuvi-collector.properties` and place it in the same directory as the JAR file and edit the file according to your needs.
 
