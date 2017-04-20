@@ -8,7 +8,9 @@ import java.util.Map;
 
 public class DataFormatV3 implements BeaconHandler {
 
-    private static final String SENSORTAG_BEGINS = "> 04 3E 21 02 01 03 01 ";
+    // For some reason the latest sensortag data format has four null bytes at the end, changing the length of the raw packer (third byte is the length)
+    private static final String OLDER_SENSORTAG_BEGINS = "> 04 3E 21 02 01 03 01 ";
+    private static final String SENSORTAG_BEGINS = "> 04 3E 25 02 01 03 01 ";
     /**
      * Contains the MAC address as key, and the timestamp of last sent update as
      * value
@@ -24,7 +26,7 @@ public class DataFormatV3 implements BeaconHandler {
 
     @Override
     public InfluxDBData read(String rawLine) {
-        if (latestMac == null && rawLine.startsWith(SENSORTAG_BEGINS)) { // line with Ruuvi MAC
+        if (latestMac == null && (rawLine.startsWith(SENSORTAG_BEGINS) || rawLine.startsWith(OLDER_SENSORTAG_BEGINS))) { // line with Ruuvi MAC
             latestMac = RuuviUtils.getMacFromLine(rawLine.substring(SENSORTAG_BEGINS.length()));
         } else if (latestMac != null) {
             try {
