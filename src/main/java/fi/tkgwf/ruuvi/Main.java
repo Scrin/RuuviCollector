@@ -4,6 +4,7 @@ import fi.tkgwf.ruuvi.db.InfluxDBConnection;
 import fi.tkgwf.ruuvi.handler.BeaconHandler;
 import fi.tkgwf.ruuvi.handler.impl.DataFormatV2;
 import fi.tkgwf.ruuvi.handler.impl.DataFormatV3;
+import fi.tkgwf.ruuvi.handler.impl.DataFormatV4;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -25,6 +26,7 @@ public class Main {
     public void initializeHandlers(long influxUpdateLimit) {
         beaconHandlers.add(new DataFormatV2(influxUpdateLimit));
         beaconHandlers.add(new DataFormatV3(influxUpdateLimit));
+        beaconHandlers.add(new DataFormatV4(influxUpdateLimit));
     }
 
     public static void main(String[] args) {
