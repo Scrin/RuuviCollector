@@ -35,6 +35,12 @@ sudo setcap 'cap_net_raw,cap_net_admin+eip' `which hcidump`
 - Run the built JAR-file with `java -jar ruuvi-collector-0.1.jar`. Note: as there is no service scripts yet, it's recommended to run this for example inside *screen* to avoid the application being killed when terminal session ends
 - To configure the settings, copy the `ruuvi-collector.properties.example` to `ruuvi-collector.properties` and place it in the same directory as the JAR file and edit the file according to your needs.
 
+### Configuration
+
+The default configuration which works without a config file assumes InfluxDB is running locally with default settings, with a database called 'ruuvi'.
+To change the default settings, copy the ruuvi-collector.properties.example file as ruuvi-collector.properties in the same directory as the collector jar file and change the settings you want.
+Most up-to-date information about the supported configuration options can be found in the ruuvi-collector.properties.example file.
+
 ### Running
 
 For built version (while in the "root" of the project):

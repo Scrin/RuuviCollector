@@ -2,7 +2,7 @@
 # Uncomment the line and change accordingly if you need
 
 # Base url to connect to, including protocol, hostname or ip address, and port
-#influxUrlBase = http://localhost:8086
+#influxUrlBase=http://localhost:8086
 
 # InfluxDB Database to use for measurements
 #influxDatabase=ruuvi
@@ -15,3 +15,18 @@
 # This is to avoid saving too many measurements especially with the default firmware which sends measurements every 0.5 seconds
 # For example 9900 means post at most one measurement type per tag per 9.9 seconds
 #influxUpdateLimit=9900
+
+# Filtering for sources based on the source MAC address (blacklist or whitelist)
+# Valid values "none", "blacklist" and "whitelist". 
+# none is the default and will allow any source to be stored
+# blacklist allows all sources EXCEPT those listed
+# whitelist allows ONLY sources that are listed
+#filter.mode=none
+
+# Mac addresses to blacklist/whitelist. This has no effect if the above is set to none
+#filter.macs=ABCDEF012345,F1E2D3C4B5A6
+
+# Operation mode, either "normal" or "dryrun"
+# normal is the default and will send the values to InfluxDB
+# dryrun will log the measurements on debug level to the log rather than sending the measurements anywhere
+#operationMode=normal

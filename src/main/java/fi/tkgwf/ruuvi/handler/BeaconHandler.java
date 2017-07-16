@@ -15,10 +15,11 @@ public interface BeaconHandler {
      * complete packet has been received.
      *
      * @param rawLine the raw dump line from hcidump process
+     * @param mac the MAC address of the packet source
      * @return an instance of a {@link InfluxDBData}, or null if this
      * handler cannot understand the packet or the packet is not yet complete
      */
-    InfluxDBData read(String rawLine);
+    InfluxDBData read(String rawLine, String mac);
 
     /**
      * Resets the internal state of this handler. This is called upon read

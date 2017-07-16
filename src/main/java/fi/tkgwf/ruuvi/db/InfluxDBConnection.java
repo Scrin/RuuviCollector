@@ -1,6 +1,7 @@
 package fi.tkgwf.ruuvi.db;
 
 import fi.tkgwf.ruuvi.bean.InfluxDBData;
+import fi.tkgwf.ruuvi.config.Config;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -11,16 +12,13 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
-public class InfluxDBConnection {
+public class InfluxDBConnection implements DBConnection{
 
     private static final Logger LOG = Logger.getLogger(InfluxDBConnection.class);
 
-    private final String influxUrl;
+    private final String influxUrl = Config.getInfluxUrl();
 
-    public InfluxDBConnection(String influxUrl) {
-        this.influxUrl = influxUrl;
-    }
-
+    @Override
     public boolean post(InfluxDBData measurement) {
         try {
             HttpURLConnection con = (HttpURLConnection) new URL(influxUrl).openConnection();

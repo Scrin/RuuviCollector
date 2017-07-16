@@ -1,5 +1,7 @@
 package fi.tkgwf.ruuvi.utils;
 
+import org.apache.commons.lang3.StringUtils;
+
 public abstract class RuuviUtils {
 
     /**
@@ -42,6 +44,9 @@ public abstract class RuuviUtils {
      * @return the MAC address, without spaces
      */
     public static String getMacFromLine(String line) {
+        if (StringUtils.isBlank(line)) {
+            return null;
+        }
         StringBuilder sb = new StringBuilder();
         String[] split = line.split(" ", 7); // 6 blocks plus remaining garbage
         for (int i = 5; i >= 0; i--) {

@@ -2,6 +2,7 @@ package fi.tkgwf.ruuvi.handler.impl;
 
 import fi.tkgwf.ruuvi.utils.RuuviUtils;
 import fi.tkgwf.ruuvi.bean.InfluxDBData;
+import fi.tkgwf.ruuvi.config.Config;
 import fi.tkgwf.ruuvi.handler.BeaconHandler;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,16 +17,15 @@ public class DataFormatV3 implements BeaconHandler {
      * value
      */
     private final Map<String, Long> updatedMacs;
-    private final long updateLimit;
+    private final long updateLimit = Config.getInfluxUpdateLimit();
     private String latestMac = null;
 
-    public DataFormatV3(long updateLimit) {
+    public DataFormatV3() {
         updatedMacs = new HashMap<>();
-        this.updateLimit = updateLimit;
     }
 
     @Override
-    public InfluxDBData read(String rawLine) {
+    public InfluxDBData read(String rawLine, String mac) {
         if (latestMac == null && (rawLine.startsWith(SENSORTAG_BEGINS) || rawLine.startsWith(OLDER_SENSORTAG_BEGINS))) { // line with Ruuvi MAC
             latestMac = RuuviUtils.getMacFromLine(rawLine.substring(SENSORTAG_BEGINS.length()));
         } else if (latestMac != null) {
@@ -49,7 +49,7 @@ public class DataFormatV3 implements BeaconHandler {
         rawLine = rawLine.trim(); // trim whitespace
         rawLine = rawLine.substring(rawLine.indexOf(' ') + 1, rawLine.lastIndexOf(' ')); // discard first and last byte
         byte[] data = RuuviUtils.hexToBytes(rawLine);
-        if (data[0] != 3) {
+        if (data.length < 14 || data[0] != 3) {
             return null; // unknown type
         }
         String protocolVersion = String.valueOf(data[0]);
@@ -90,6 +90,9 @@ public class DataFormatV3 implements BeaconHandler {
     }
 
     private boolean shouldUpdate(String mac) {
+        if (!Config.isAllowedMAC(mac)) {
+            return false;
+        }
         Long lastUpdate = updatedMacs.get(mac);
         if (lastUpdate == null || lastUpdate + updateLimit < System.currentTimeMillis()) {
             updatedMacs.put(mac, System.currentTimeMillis());
