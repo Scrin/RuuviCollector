@@ -10,6 +10,7 @@ import fi.tkgwf.ruuvi.handler.impl.DataFormatV4;
 import fi.tkgwf.ruuvi.utils.HCIParser;
 import fi.tkgwf.ruuvi.utils.InfluxDataMigrator;
 import fi.tkgwf.ruuvi.utils.MeasurementValueCalculator;
+import fi.tkgwf.ruuvi.handler.impl.DataFormatV5;
 import fi.tkgwf.ruuvi.utils.RuuviUtils;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -31,6 +32,7 @@ public class Main {
         beaconHandlers.add(new DataFormatV2());
         beaconHandlers.add(new DataFormatV3());
         beaconHandlers.add(new DataFormatV4());
+        beaconHandlers.add(new DataFormatV5());
     }
 
     public static void main(String[] args) {
