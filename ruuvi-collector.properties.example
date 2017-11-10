@@ -30,3 +30,10 @@
 # normal is the default and will send the values to InfluxDB
 # dryrun will log the measurements on debug level to the log rather than sending the measurements anywhere
 #operationMode=normal
+
+# Commands for starting the BLE scanning and the dump.
+# The scan command is only executed, output and exit is ignored. Setting this blank will disable this command.
+# The dump command is executed and it's output is parsed, the collector will exit when/if this command ends
+# In general you want to change these only if you intend to use wrapper scripts or you need to use absolute paths to the executables
+#command.scan=hcitool lescan --duplicates --passive
+#command.dump=hcidump --raw

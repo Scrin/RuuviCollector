@@ -12,8 +12,10 @@ import fi.tkgwf.ruuvi.utils.RuuviUtils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 public class Main {
@@ -29,8 +31,6 @@ public class Main {
     }
 
     public static void main(String[] args) {
-
-        // Start the collector..
         Main m = new Main();
         m.initializeHandlers();
         if (!m.run()) {
@@ -39,13 +39,25 @@ public class Main {
     }
 
     private BufferedReader startHciListeners() throws IOException {
-        Process hcitool = new ProcessBuilder("hcitool", "lescan", "--duplicates").start();
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> hcitool.destroyForcibly()));
-        Process hcidump = new ProcessBuilder("hcidump", "--raw").start();
+        String[] scan = Config.getScanCommand();
+        if (scan.length > 0 && StringUtils.isNotBlank(scan[0])) {
+            Process hcitool = new ProcessBuilder(scan).start();
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> hcitool.destroyForcibly()));
+            LOG.debug("Starting scan with: " + Arrays.toString(scan));
+        } else {
+            LOG.debug("Skipping scan command, scan command is blank.");
+        }
+        Process hcidump = new ProcessBuilder(Config.getDumpCommand()).start();
         Runtime.getRuntime().addShutdownHook(new Thread(() -> hcidump.destroyForcibly()));
+        LOG.debug("Starting dump with: " + Arrays.toString(Config.getDumpCommand()));
         return new BufferedReader(new InputStreamReader(hcidump.getInputStream()));
     }
 
+    /**
+     * Run the collector.
+     *
+     * @return true if the run ends gracefully, false in case of severe errors
+     */
     private boolean run() {
         DBConnection db = Config.isDryrunMode() ? new DummyDBConnection() : new InfluxDBConnection();
         BufferedReader reader;
@@ -55,7 +67,7 @@ public class Main {
             LOG.error("Failed to start hci processes", ex);
             return false;
         }
-        LOG.info("BLE listener started successfully, waiting for data... \nIf you don't get any data, check that you are able to run 'hcitool lescan --duplicates' and 'hcidump --raw' without issues");
+        LOG.info("BLE listener started successfully, waiting for data... \nIf you don't get any data, check that you are able to run 'hcitool lescan' and 'hcidump --raw' without issues");
         boolean dataReceived = false;
         try {
             String line, latestMAC = null;

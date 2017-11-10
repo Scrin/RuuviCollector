@@ -21,6 +21,8 @@ public abstract class Config {
     private static String operationMode = "normal";
     private static Predicate<String> filterMode = (s) -> true;
     private static final Set<String> FILTER_MACS = new HashSet<>();
+    private static String[] scanCommand = {"hcitool", "lescan", "--duplicates", "--passive"};
+    private static String[] dumpCommand = {"hcidump", "--raw"};
 
     static {
         readConfig();
@@ -88,6 +90,12 @@ public abstract class Config {
                                     .filter(s -> s.length() == 12)
                                     .forEach(FILTER_MACS::add);
                             break;
+                        case "command.scan":
+                            scanCommand = value.split(" ");
+                            break;
+                        case "command.dump":
+                            dumpCommand = value.split(" ");
+                            break;
                     }
                 }
             }
@@ -112,5 +120,13 @@ public abstract class Config {
 
     public static boolean isAllowedMAC(String mac) {
         return filterMode.test(mac);
+    }
+
+    public static String[] getScanCommand() {
+        return scanCommand;
+    }
+
+    public static String[] getDumpCommand() {
+        return dumpCommand;
     }
 }
