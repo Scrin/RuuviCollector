@@ -16,7 +16,10 @@ public abstract class Config {
 
     private static final Logger LOG = Logger.getLogger(Config.class);
 
-    private static String influxUrl;
+    private static String influxUrl = "http://localhost:8086";
+    private static String influxDatabase = "ruuvi";
+    private static String influxUser = "ruuvi";
+    private static String influxPassword = "ruuvi";
     private static long influxUpdateLimit = 9900;
     private static String operationMode = "normal";
     private static Predicate<String> filterMode = (s) -> true;
@@ -29,13 +32,6 @@ public abstract class Config {
     }
 
     private static void readConfig() {
-        // Defaults..
-        String influxUrlBase = "http://localhost:8086";
-        String influxDatabase = "ruuvi";
-        String influxUser = "ruuvi";
-        String influxPassword = "ruuvi";
-
-        // Read config..
         try {
             File jarLocation = new File(Config.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getParentFile();
             File[] configFiles = jarLocation.listFiles(f -> f.isFile() && f.getName().equals("ruuvi-collector.properties"));
@@ -53,8 +49,8 @@ public abstract class Config {
                     String key = (String) e.nextElement();
                     String value = props.getProperty(key);
                     switch (key) {
-                        case "influxUrlBase":
-                            influxUrlBase = value;
+                        case "influxUrl":
+                            influxUrl = value;
                             break;
                         case "influxDatabase":
                             influxDatabase = value;
@@ -102,8 +98,6 @@ public abstract class Config {
         } catch (URISyntaxException | IOException ex) {
             LOG.warn("Failed to read configuration, using default values...", ex);
         }
-
-        influxUrl = String.format("%s/write?db=%s&u=%s&p=%s", influxUrlBase, influxDatabase, influxUser, influxPassword);
     }
 
     public static boolean isDryrunMode() {
@@ -112,6 +106,18 @@ public abstract class Config {
 
     public static String getInfluxUrl() {
         return influxUrl;
+    }
+
+    public static String getInfluxDatabase() {
+        return influxDatabase;
+    }
+
+    public static String getInfluxUser() {
+        return influxUser;
+    }
+
+    public static String getInfluxPassword() {
+        return influxPassword;
     }
 
     public static long getInfluxUpdateLimit() {

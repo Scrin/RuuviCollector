@@ -84,7 +84,7 @@ public class Main {
                     beaconHandlers.stream()
                             .map(handler -> handler.read(finalLine, finalMAC))
                             .filter(measurement -> measurement != null)
-                            .forEach(db::post);
+                            .forEach(db::save);
                 } catch (Exception ex) {
                     LOG.warn("Uncaught exception while handling measurements from MAC address \"" + latestMAC + "\", if this repeats and this is not a Ruuvitag, consider blacklisting it", ex);
                     beaconHandlers.forEach(BeaconHandler::reset);

@@ -1,8 +1,14 @@
 package fi.tkgwf.ruuvi.db;
 
-import fi.tkgwf.ruuvi.bean.InfluxDBData;
+import fi.tkgwf.ruuvi.bean.RuuviMeasurement;
 
 public interface DBConnection {
 
-    boolean post(InfluxDBData measurement);
+    /**
+     * Saves the measurement
+     *
+     * @param measurement
+     * @return true on success, false on failure
+     */
+    boolean save(RuuviMeasurement measurement);
 }

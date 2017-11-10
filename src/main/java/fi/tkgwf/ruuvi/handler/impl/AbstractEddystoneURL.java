@@ -1,6 +1,6 @@
 package fi.tkgwf.ruuvi.handler.impl;
 
-import fi.tkgwf.ruuvi.bean.InfluxDBData;
+import fi.tkgwf.ruuvi.bean.RuuviMeasurement;
 import fi.tkgwf.ruuvi.config.Config;
 import fi.tkgwf.ruuvi.handler.BeaconHandler;
 import fi.tkgwf.ruuvi.utils.RuuviUtils;
@@ -24,7 +24,7 @@ public abstract class AbstractEddystoneURL implements BeaconHandler {
     abstract protected String getRuuviBegins();
 
     @Override
-    public InfluxDBData read(String rawLine, String mac) {
+    public RuuviMeasurement read(String rawLine, String mac) {
         if (latestMac == null && latestUrlBeginning == null && rawLine.startsWith(getRuuviBegins())) { // line with Ruuvi MAC
             latestMac = RuuviUtils.getMacFromLine(rawLine.substring(getRuuviBegins().length()));
         } else if (latestMac != null && latestUrlBeginning == null && rawLine.contains(RUUVI_URL)) { // revious line had a Ruuvi MAC, this has beginning of url
@@ -53,32 +53,35 @@ public abstract class AbstractEddystoneURL implements BeaconHandler {
         return Base64.getDecoder().decode(base64.replace('-', '+').replace('_', '/')); // Ruuvi uses URL-safe Base64, convert that to "traditional" Base64
     }
 
-    private InfluxDBData handleMeasurement(String mac, String base64) {
+    private RuuviMeasurement handleMeasurement(String mac, String base64) {
         byte[] data = base64ToByteArray(base64);
         if (data.length < 6 || data[0] != 2 && data[0] != 4) {
             return null; // unknown type
         }
-        String protocolVersion = String.valueOf(data[0]);
+        int protocolVersion = data[0]& 0xFF;
 
-        float humidity = ((float) (data[1] & 0xFF)) / 2f;
+        double humidity = ((float) (data[1] & 0xFF)) / 2f;
 
         int temperatureSign = (data[2] >> 7) & 1;
         int temperatureBase = (data[2] & 0x7F);
-        float temperatureFraction = ((float) data[3]) / 100f;
-        float temperature = ((float) temperatureBase) + temperatureFraction;
+        double temperatureFraction = ((float) data[3]) / 100f;
+        double temperature = ((float) temperatureBase) + temperatureFraction;
         if (temperatureSign == 1) {
             temperature *= -1;
         }
 
         int pressureHi = data[4] & 0xFF;
         int pressureLo = data[5] & 0xFF;
-        int pressure = pressureHi * 256 + 50000 + pressureLo;
+        double pressure = pressureHi * 256 + 50000 + pressureLo;
 
-        InfluxDBData.Builder builder = new InfluxDBData.Builder().mac(mac).protocolVersion(protocolVersion)
-                .measurement("temperature").value(temperature)
-                .measurement("humidity").value(humidity)
-                .measurement("pressure").value(pressure);
-        return builder.build();
+        // TODO: Refactor and remove the unnecessary temp variables above
+        RuuviMeasurement measurement = new RuuviMeasurement();
+        measurement.mac = mac;
+        measurement.dataFormat = protocolVersion;
+        measurement.temperature = temperature;
+        measurement.relativeHumidity = humidity;
+        measurement.pressure = pressure;
+        return measurement;
     }
 
     private String getRuuviUrlBeginningFromLine(String line) {
