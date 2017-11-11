@@ -1,5 +1,6 @@
 package fi.tkgwf.ruuvi.handler;
 
+import fi.tkgwf.ruuvi.bean.HCIData;
 import fi.tkgwf.ruuvi.bean.RuuviMeasurement;
 
 /**
@@ -10,21 +11,20 @@ import fi.tkgwf.ruuvi.bean.RuuviMeasurement;
 public interface BeaconHandler {
 
     /**
-     * Reads a line of the raw dump from hcidump, and creates a
-     * {@link RuuviMeasurement} from a BLE beacon sent by a tag when a complete
-     * packet has been received.
+     * Handles a packet and creates a {@link RuuviMeasurement} if the handler
+     * understands this packet.
      *
-     * @param rawLine the raw dump line from hcidump process
-     * @param mac the MAC address of the packet source
+     * @param hciData the data parsed from hcidump
      * @return an instance of a {@link RuuviMeasurement}, or null if this
      * handler cannot understand the packet or the packet is not yet complete
      */
-    RuuviMeasurement read(String rawLine, String mac);
+    RuuviMeasurement handle(HCIData hciData);
 
     /**
      * Resets the internal state of this handler. This is called upon read
      * errors and other anomalies that may leave handlers in an inconsistent
      * state.
      */
-    void reset();
+    default void reset() {
+    }
 }

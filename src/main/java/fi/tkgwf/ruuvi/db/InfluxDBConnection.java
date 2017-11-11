@@ -4,14 +4,11 @@ import fi.tkgwf.ruuvi.bean.RuuviMeasurement;
 import fi.tkgwf.ruuvi.config.Config;
 import fi.tkgwf.ruuvi.utils.InfluxDBConverter;
 import java.util.concurrent.TimeUnit;
-import org.apache.log4j.Logger;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.BatchPoints;
 
 public class InfluxDBConnection implements DBConnection {
-
-    private static final Logger LOG = Logger.getLogger(InfluxDBConnection.class);
 
     private final InfluxDB influxDB;
 
@@ -22,9 +19,8 @@ public class InfluxDBConnection implements DBConnection {
     }
 
     @Override
-    public boolean save(RuuviMeasurement measurement) {
+    public void save(RuuviMeasurement measurement) {
         BatchPoints points = InfluxDBConverter.toLegacyInflux(measurement);
         influxDB.write(points);
-        return false;
     }
 }

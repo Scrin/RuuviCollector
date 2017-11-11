@@ -19,6 +19,12 @@ public class InfluxDBConverter {
         createAndAddLegacyFormatPointIfNotNull(points, "acceleration", measurement.accelerationZ, "axis", "z");
         createAndAddLegacyFormatPointIfNotNull(points, "acceleration", measurement.accelerationTotal, "axis", "total");
         createAndAddLegacyFormatPointIfNotNull(points, "batteryVoltage", measurement.batteryVoltage, null, null);
+        createAndAddLegacyFormatPointIfNotNull(points, "rssi", measurement.rssi, null, null);
+        // The 'legacy format' using single-value measurements is terribly inefficient in terms of space used, these will be available in the "new format" using multi-value measurements
+        // createAndAddLegacyFormatPointIfNotNull(points, "absoluteHumidity", measurement.absoluteHumidity, null, null);
+        // createAndAddLegacyFormatPointIfNotNull(points, "dewPoint", measurement.dewPoint, null, null);
+        // createAndAddLegacyFormatPointIfNotNull(points, "equilibriumVaporPressure", measurement.equilibriumVaporPressure, null, null);
+        // createAndAddLegacyFormatPointIfNotNull(points, "airDensity", measurement.airDensity, null, null);
         return BatchPoints
                 .database(Config.getInfluxDatabase())
                 .tag("protocolVersion", String.valueOf(measurement.dataFormat))

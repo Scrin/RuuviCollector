@@ -1,96 +1,83 @@
 package fi.tkgwf.ruuvi.handler.impl;
 
+import fi.tkgwf.ruuvi.bean.HCIData;
 import fi.tkgwf.ruuvi.bean.RuuviMeasurement;
 import fi.tkgwf.ruuvi.config.Config;
 import fi.tkgwf.ruuvi.handler.BeaconHandler;
-import fi.tkgwf.ruuvi.utils.RuuviUtils;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
 public abstract class AbstractEddystoneURL implements BeaconHandler {
-    
-    private static final String RUUVI_URL = " 72 75 75 2E 76 69 2F 23 ";
 
+    private static final String RUUVI_BASE_URL = "ruu.vi/#";
     private final Map<String, Long> updatedMacs;
     private final long updateLimit = Config.getInfluxUpdateLimit();
-    private String latestMac = null;
-    private String latestUrlBeginning = null;
 
     public AbstractEddystoneURL() {
         updatedMacs = new HashMap<>();
     }
-    
-    abstract protected String getRuuviBegins();
+
+    abstract protected byte[] base64ToByteArray(String base64);
 
     @Override
-    public RuuviMeasurement read(String rawLine, String mac) {
-        if (latestMac == null && latestUrlBeginning == null && rawLine.startsWith(getRuuviBegins())) { // line with Ruuvi MAC
-            latestMac = RuuviUtils.getMacFromLine(rawLine.substring(getRuuviBegins().length()));
-        } else if (latestMac != null && latestUrlBeginning == null && rawLine.contains(RUUVI_URL)) { // revious line had a Ruuvi MAC, this has beginning of url
-            latestUrlBeginning = getRuuviUrlBeginningFromLine(rawLine);
-        } else if (latestMac != null && latestUrlBeginning != null) { // this has the remaining part of the url
-            try {
-                if (shouldUpdate(latestMac)) {
-                    String url = latestUrlBeginning + getRuuviUrlEndingFromLine(rawLine);
-                    return handleMeasurement(latestMac, RuuviUtils.hexToAscii(url));
-                }
-            } finally {
-                latestMac = null;
-                latestUrlBeginning = null;
-            }
+    public RuuviMeasurement handle(HCIData hciData) {
+        HCIData.Report.AdvertisementData adData = hciData.findAdvertisementDataByType(0x16);
+        if (adData == null || !shouldUpdate(hciData.mac)) {
+            return null;
         }
-        return null;
-    }
-
-    @Override
-    public void reset() {
-        latestMac = null;
-        latestUrlBeginning = null;
-    }
-    
-    protected byte[] base64ToByteArray(String base64){
-        return Base64.getDecoder().decode(base64.replace('-', '+').replace('_', '/')); // Ruuvi uses URL-safe Base64, convert that to "traditional" Base64
-    }
-
-    private RuuviMeasurement handleMeasurement(String mac, String base64) {
-        byte[] data = base64ToByteArray(base64);
+        String hashPart = getRuuviUrlHashPart(adData.dataBytes());
+        if (hashPart == null) {
+            return null; // not a ruuvi url
+        }
+        byte[] data;
+        try {
+            data = base64ToByteArray(hashPart);
+        } catch (IllegalArgumentException ex) {
+            return null; // V2 format will throw this when trying to parse V4 and vice versa
+        }
         if (data.length < 6 || data[0] != 2 && data[0] != 4) {
             return null; // unknown type
         }
-        int protocolVersion = data[0]& 0xFF;
+        RuuviMeasurement measurement = new RuuviMeasurement();
+        measurement.mac = hciData.mac;
+        measurement.rssi = hciData.rssi;
+        measurement.dataFormat = data[0] & 0xFF;
 
-        double humidity = ((float) (data[1] & 0xFF)) / 2f;
+        measurement.relativeHumidity = ((double) (data[1] & 0xFF)) / 2d;
 
         int temperatureSign = (data[2] >> 7) & 1;
         int temperatureBase = (data[2] & 0x7F);
-        double temperatureFraction = ((float) data[3]) / 100f;
-        double temperature = ((float) temperatureBase) + temperatureFraction;
+        double temperatureFraction = ((float) data[3]) / 100d;
+        measurement.temperature = ((float) temperatureBase) + temperatureFraction;
         if (temperatureSign == 1) {
-            temperature *= -1;
+            measurement.temperature *= -1;
         }
 
         int pressureHi = data[4] & 0xFF;
         int pressureLo = data[5] & 0xFF;
-        double pressure = pressureHi * 256 + 50000 + pressureLo;
-
-        // TODO: Refactor and remove the unnecessary temp variables above
-        RuuviMeasurement measurement = new RuuviMeasurement();
-        measurement.mac = mac;
-        measurement.dataFormat = protocolVersion;
-        measurement.temperature = temperature;
-        measurement.relativeHumidity = humidity;
-        measurement.pressure = pressure;
+        measurement.pressure = (double) pressureHi * 256 + 50000 + pressureLo;
         return measurement;
     }
 
-    private String getRuuviUrlBeginningFromLine(String line) {
-        return line.substring(line.indexOf(RUUVI_URL) + RUUVI_URL.length());
-    }
-
-    private String getRuuviUrlEndingFromLine(String line) {
-        line = line.trim();
-        return line.substring(0, line.lastIndexOf(' '));
+    private String getRuuviUrlHashPart(byte[] data) {
+        if (data.length < 15) {
+            return null; // too short
+        }
+        if ((data[0] & 0xFF) != 0xAA && (data[1] & 0xFF) != 0xFE) {
+            return null; // not an eddystone UUID
+        }
+        if (data[2] != 0x10) {
+            return null; // not an eddystone URL
+        }
+        if (data[4] != 0x03) {
+            return null; // not https://
+        }
+        String basePart = new String(data, 5, data.length - (5));
+        if (!basePart.startsWith(RUUVI_BASE_URL)) {
+            return null; // not a ruuvi url
+        }
+        int preLength = 5 + RUUVI_BASE_URL.length();
+        return new String(data, preLength, data.length - preLength);
     }
 
     private boolean shouldUpdate(String mac) {

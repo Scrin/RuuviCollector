@@ -8,8 +8,7 @@ public class DummyDBConnection implements DBConnection {
     private static final Logger LOG = Logger.getLogger(DummyDBConnection.class);
 
     @Override
-    public boolean save(RuuviMeasurement measurement) {
+    public void save(RuuviMeasurement measurement) {
         LOG.debug(measurement);
-        return true;
     }
 }

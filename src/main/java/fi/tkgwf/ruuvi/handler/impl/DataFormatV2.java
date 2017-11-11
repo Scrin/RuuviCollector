@@ -1,11 +1,11 @@
 package fi.tkgwf.ruuvi.handler.impl;
 
+import java.util.Base64;
+
 public class DataFormatV2 extends AbstractEddystoneURL {
 
-    protected static final String RUUVI_BEGINS = "> 04 3E 2A 02 01 03 01 ";
-
     @Override
-    protected String getRuuviBegins() {
-        return RUUVI_BEGINS;
+    protected byte[] base64ToByteArray(String base64) {
+        return Base64.getDecoder().decode(base64.replace('-', '+').replace('_', '/')); // Ruuvi uses URL-safe Base64, convert that to "traditional" Base64
     }
 }

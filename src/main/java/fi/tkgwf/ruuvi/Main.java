@@ -1,5 +1,6 @@
 package fi.tkgwf.ruuvi;
 
+import fi.tkgwf.ruuvi.bean.HCIData;
 import fi.tkgwf.ruuvi.config.Config;
 import fi.tkgwf.ruuvi.db.DBConnection;
 import fi.tkgwf.ruuvi.db.DummyDBConnection;
@@ -8,6 +9,8 @@ import fi.tkgwf.ruuvi.handler.BeaconHandler;
 import fi.tkgwf.ruuvi.handler.impl.DataFormatV2;
 import fi.tkgwf.ruuvi.handler.impl.DataFormatV3;
 import fi.tkgwf.ruuvi.handler.impl.DataFormatV4;
+import fi.tkgwf.ruuvi.utils.HCIParser;
+import fi.tkgwf.ruuvi.utils.MeasurementValueCalculator;
 import fi.tkgwf.ruuvi.utils.RuuviUtils;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,6 +18,7 @@ import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -60,6 +64,7 @@ public class Main {
      */
     private boolean run() {
         DBConnection db = Config.isDryrunMode() ? new DummyDBConnection() : new InfluxDBConnection();
+        HCIParser parser = new HCIParser();
         BufferedReader reader;
         try {
             reader = startHciListeners();
@@ -73,18 +78,25 @@ public class Main {
             String line, latestMAC = null;
             while ((line = reader.readLine()) != null) {
                 if (!dataReceived) {
-                    LOG.info("Successfully reading data from hcidump");
-                    dataReceived = true;
+                    if (line.startsWith("> ")) {
+                        LOG.info("Successfully reading data from hcidump");
+                        dataReceived = true;
+                    } else {
+                        continue; // skip the unnecessary garbage at beginning containing hcidump version and other junk print
+                    }
                 }
                 try {
                     if (line.startsWith("> ")) {
                         latestMAC = RuuviUtils.getMacFromLine(line.substring(23));
                     }
-                    String finalLine = line, finalMAC = latestMAC;// lambdas require these to be effectively final
-                    beaconHandlers.stream()
-                            .map(handler -> handler.read(finalLine, finalMAC))
-                            .filter(measurement -> measurement != null)
-                            .forEach(db::save);
+                    HCIData hciData = parser.readLine(line);
+                    if (hciData != null) {
+                        beaconHandlers.stream()
+                                .map(handler -> handler.handle(hciData))
+                                .filter(Objects::nonNull)
+                                .map(MeasurementValueCalculator::calculateAllValues)
+                                .forEach(db::save);
+                    }
                 } catch (Exception ex) {
                     LOG.warn("Uncaught exception while handling measurements from MAC address \"" + latestMAC + "\", if this repeats and this is not a Ruuvitag, consider blacklisting it", ex);
                     beaconHandlers.forEach(BeaconHandler::reset);

@@ -64,12 +64,17 @@ public class RuuviMeasurement {
      * Tag ID as sent by the tag. In general this should be the same as the MAC.
      */
     public String tagID;
-
-    ///////////////////////////////////////////////
-    // Calculated values (on the receiving side) //
-    ///////////////////////////////////////////////
     /**
-     * Total acceleration (Calculated value)
+     * The RSSI at the receiver
+     */
+    public Integer rssi;
+
+    /////////////////////////////////////////////////////////////////////
+    // Calculated values (on the receiving side)                       //
+    // All of these can be calculated based on the Actual values above //
+    /////////////////////////////////////////////////////////////////////
+    /**
+     * Total acceleration
      */
     public Double accelerationTotal;
     /**
@@ -80,4 +85,12 @@ public class RuuviMeasurement {
      * Dew point in Celsius
      */
     public Double dewPoint;
+    /**
+     * Vapor pressure of water
+     */
+    public Double equilibriumVaporPressure;
+    /**
+     * Density of air
+     */
+    public Double airDensity;
 }
