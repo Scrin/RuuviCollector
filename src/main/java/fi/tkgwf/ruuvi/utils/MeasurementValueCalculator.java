@@ -13,10 +13,10 @@ public class MeasurementValueCalculator {
      */
     public static RuuviMeasurement calculateAllValues(RuuviMeasurement measurement) {
         measurement.accelerationTotal = totalAcceleration(measurement.accelerationX, measurement.accelerationY, measurement.accelerationZ);
-        measurement.absoluteHumidity = absoluteHumidity(measurement.temperature, measurement.relativeHumidity);
-        measurement.dewPoint = dewPoint(measurement.temperature, measurement.relativeHumidity);
+        measurement.absoluteHumidity = absoluteHumidity(measurement.temperature, measurement.humidity);
+        measurement.dewPoint = dewPoint(measurement.temperature, measurement.humidity);
         measurement.equilibriumVaporPressure = equilibriumVaporPressure(measurement.temperature);
-        measurement.airDensity = airDensity(measurement.temperature, measurement.relativeHumidity, measurement.pressure);
+        measurement.airDensity = airDensity(measurement.temperature, measurement.humidity, measurement.pressure);
         return measurement;
     }
 
@@ -35,7 +35,7 @@ public class MeasurementValueCalculator {
     }
 
     public static Double dewPoint(Double temperature, Double relativeHumidity) {
-        if (temperature == null || relativeHumidity == null) {
+        if (temperature == null || relativeHumidity == null || relativeHumidity == 0) {
             return null;
         }
         double v = Math.log(relativeHumidity / 100 * equilibriumVaporPressure(temperature) / 611.2);

@@ -6,13 +6,13 @@ import fi.tkgwf.ruuvi.utils.InfluxDBConverter;
 import java.util.concurrent.TimeUnit;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
-import org.influxdb.dto.Point;
+import org.influxdb.dto.BatchPoints;
 
-public class InfluxDBConnection implements DBConnection {
+public class LegacyInfluxDBConnection implements DBConnection {
 
     private final InfluxDB influxDB;
 
-    public InfluxDBConnection() {
+    public LegacyInfluxDBConnection() {
         influxDB = InfluxDBFactory.connect(Config.getInfluxUrl(), Config.getInfluxUser(), Config.getInfluxPassword());
         influxDB.setDatabase(Config.getInfluxDatabase());
         influxDB.enableGzip();
@@ -21,7 +21,7 @@ public class InfluxDBConnection implements DBConnection {
 
     @Override
     public void save(RuuviMeasurement measurement) {
-        Point point = InfluxDBConverter.toInflux(measurement);
-        influxDB.write(point);
+        BatchPoints points = InfluxDBConverter.toLegacyInflux(measurement);
+        influxDB.write(points);
     }
 }

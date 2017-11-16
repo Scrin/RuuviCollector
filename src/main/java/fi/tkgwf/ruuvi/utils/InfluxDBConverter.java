@@ -4,15 +4,49 @@ import fi.tkgwf.ruuvi.bean.RuuviMeasurement;
 import fi.tkgwf.ruuvi.config.Config;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.influxdb.dto.BatchPoints;
 import org.influxdb.dto.Point;
 
 public class InfluxDBConverter {
 
+    public static Point toInflux(RuuviMeasurement measurement) {
+        Point.Builder p = Point.measurement("ruuvi_measurements").tag("mac", measurement.mac);
+        if (measurement.dataFormat != null) {
+            p.tag("dataFormat", String.valueOf(measurement.dataFormat));
+        }
+        if (measurement.time != null) {
+            p.time(measurement.time, TimeUnit.MILLISECONDS);
+        }
+        addValueIfNotNull(p, "temperature", measurement.temperature);
+        addValueIfNotNull(p, "humidity", measurement.humidity);
+        addValueIfNotNull(p, "pressure", measurement.pressure);
+        addValueIfNotNull(p, "accelerationX", measurement.accelerationX);
+        addValueIfNotNull(p, "accelerationY", measurement.accelerationY);
+        addValueIfNotNull(p, "accelerationZ", measurement.accelerationZ);
+        addValueIfNotNull(p, "batteryVoltage", measurement.batteryVoltage);
+        addValueIfNotNull(p, "txPower", measurement.txPower);
+        addValueIfNotNull(p, "movementCounter", measurement.movementCounter);
+        addValueIfNotNull(p, "measurementSequenceNumber", measurement.measurementSequenceNumber);
+        addValueIfNotNull(p, "rssi", measurement.rssi);
+        addValueIfNotNull(p, "accelerationTotal", measurement.accelerationTotal);
+        addValueIfNotNull(p, "absoluteHumidity", measurement.absoluteHumidity);
+        addValueIfNotNull(p, "dewPoint", measurement.dewPoint);
+        addValueIfNotNull(p, "equilibriumVaporPressure", measurement.equilibriumVaporPressure);
+        addValueIfNotNull(p, "airDensity", measurement.airDensity);
+        return p.build();
+    }
+
+    private static void addValueIfNotNull(Point.Builder point, String name, Number value) {
+        if (value != null) {
+            point.addField(name, value);
+        }
+    }
+
     public static BatchPoints toLegacyInflux(RuuviMeasurement measurement) {
         List<Point> points = new ArrayList<>();
         createAndAddLegacyFormatPointIfNotNull(points, "temperature", measurement.temperature, null, null);
-        createAndAddLegacyFormatPointIfNotNull(points, "humidity", measurement.relativeHumidity, null, null);
+        createAndAddLegacyFormatPointIfNotNull(points, "humidity", measurement.humidity, null, null);
         createAndAddLegacyFormatPointIfNotNull(points, "pressure", measurement.pressure, null, null);
         createAndAddLegacyFormatPointIfNotNull(points, "acceleration", measurement.accelerationX, "axis", "x");
         createAndAddLegacyFormatPointIfNotNull(points, "acceleration", measurement.accelerationY, "axis", "y");
@@ -20,11 +54,6 @@ public class InfluxDBConverter {
         createAndAddLegacyFormatPointIfNotNull(points, "acceleration", measurement.accelerationTotal, "axis", "total");
         createAndAddLegacyFormatPointIfNotNull(points, "batteryVoltage", measurement.batteryVoltage, null, null);
         createAndAddLegacyFormatPointIfNotNull(points, "rssi", measurement.rssi, null, null);
-        // The 'legacy format' using single-value measurements is terribly inefficient in terms of space used, these will be available in the "new format" using multi-value measurements
-        // createAndAddLegacyFormatPointIfNotNull(points, "absoluteHumidity", measurement.absoluteHumidity, null, null);
-        // createAndAddLegacyFormatPointIfNotNull(points, "dewPoint", measurement.dewPoint, null, null);
-        // createAndAddLegacyFormatPointIfNotNull(points, "equilibriumVaporPressure", measurement.equilibriumVaporPressure, null, null);
-        // createAndAddLegacyFormatPointIfNotNull(points, "airDensity", measurement.airDensity, null, null);
         return BatchPoints
                 .database(Config.getInfluxDatabase())
                 .tag("protocolVersion", String.valueOf(measurement.dataFormat))

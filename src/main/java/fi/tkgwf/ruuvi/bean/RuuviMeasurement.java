@@ -7,6 +7,20 @@ package fi.tkgwf.ruuvi.bean;
  * present depending on the data format and implementations.
  */
 public class RuuviMeasurement {
+    
+    ////////////////////
+    // Special values //
+    ////////////////////
+
+    /**
+     * Timestamp in milliseconds, normally not populated to use local time
+     */
+    public Long time;
+    
+    /**
+     * Friendly name for the tag
+     */
+    public String name;
 
     //////////////////////////////
     // Actual (received) values //
@@ -26,7 +40,7 @@ public class RuuviMeasurement {
     /**
      * Relative humidity in percentage (0-100)
      */
-    public Double relativeHumidity;
+    public Double humidity;
     /**
      * Pressure in Pa
      */

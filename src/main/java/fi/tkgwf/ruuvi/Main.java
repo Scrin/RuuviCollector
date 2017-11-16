@@ -4,12 +4,13 @@ import fi.tkgwf.ruuvi.bean.HCIData;
 import fi.tkgwf.ruuvi.config.Config;
 import fi.tkgwf.ruuvi.db.DBConnection;
 import fi.tkgwf.ruuvi.db.DummyDBConnection;
-import fi.tkgwf.ruuvi.db.InfluxDBConnection;
+import fi.tkgwf.ruuvi.db.LegacyInfluxDBConnection;
 import fi.tkgwf.ruuvi.handler.BeaconHandler;
 import fi.tkgwf.ruuvi.handler.impl.DataFormatV2;
 import fi.tkgwf.ruuvi.handler.impl.DataFormatV3;
 import fi.tkgwf.ruuvi.handler.impl.DataFormatV4;
 import fi.tkgwf.ruuvi.utils.HCIParser;
+import fi.tkgwf.ruuvi.utils.InfluxDataMigrator;
 import fi.tkgwf.ruuvi.utils.MeasurementValueCalculator;
 import fi.tkgwf.ruuvi.utils.RuuviUtils;
 import java.io.BufferedReader;
@@ -35,10 +36,15 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        Main m = new Main();
-        m.initializeHandlers();
-        if (!m.run()) {
-            System.exit(1);
+        if (true||args.length >= 1 && args[0].equalsIgnoreCase("migrate")) {
+            InfluxDataMigrator migrator = new InfluxDataMigrator();
+            migrator.migrate();
+        } else {
+            Main m = new Main();
+            m.initializeHandlers();
+            if (!m.run()) {
+                System.exit(1);
+            }
         }
     }
 
@@ -63,7 +69,7 @@ public class Main {
      * @return true if the run ends gracefully, false in case of severe errors
      */
     private boolean run() {
-        DBConnection db = Config.isDryrunMode() ? new DummyDBConnection() : new InfluxDBConnection();
+        DBConnection db = Config.isDryrunMode() ? new DummyDBConnection() : new LegacyInfluxDBConnection();
         HCIParser parser = new HCIParser();
         BufferedReader reader;
         try {

@@ -37,7 +37,7 @@ public class DataFormatV3 implements BeaconHandler {
         m.rssi = hciData.rssi;
         m.dataFormat = data[0] & 0xFF;
 
-        m.relativeHumidity = ((double) (data[1] & 0xFF)) / 2d;
+        m.humidity = ((double) (data[1] & 0xFF)) / 2d;
 
         int temperatureSign = (data[2] >> 7) & 1;
         int temperatureBase = (data[2] & 0x7F);

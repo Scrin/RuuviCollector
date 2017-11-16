@@ -43,7 +43,7 @@ public abstract class AbstractEddystoneURL implements BeaconHandler {
         measurement.rssi = hciData.rssi;
         measurement.dataFormat = data[0] & 0xFF;
 
-        measurement.relativeHumidity = ((double) (data[1] & 0xFF)) / 2d;
+        measurement.humidity = ((double) (data[1] & 0xFF)) / 2d;
 
         int temperatureSign = (data[2] >> 7) & 1;
         int temperatureBase = (data[2] & 0x7F);
