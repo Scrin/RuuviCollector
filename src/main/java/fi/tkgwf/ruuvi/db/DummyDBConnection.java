@@ -11,4 +11,8 @@ public class DummyDBConnection implements DBConnection {
     public void save(RuuviMeasurement measurement) {
         LOG.debug(measurement);
     }
+
+    @Override
+    public void close() {
+    }
 }

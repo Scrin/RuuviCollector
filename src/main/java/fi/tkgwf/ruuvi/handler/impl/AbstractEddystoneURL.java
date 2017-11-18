@@ -11,7 +11,7 @@ public abstract class AbstractEddystoneURL implements BeaconHandler {
 
     private static final String RUUVI_BASE_URL = "ruu.vi/#";
     private final Map<String, Long> updatedMacs;
-    private final long updateLimit = Config.getInfluxUpdateLimit();
+    private final long updateLimit = Config.getMeasurementUpdateLimit();
 
     public AbstractEddystoneURL() {
         updatedMacs = new HashMap<>();

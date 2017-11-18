@@ -4,9 +4,7 @@ import fi.tkgwf.ruuvi.bean.HCIData;
 import fi.tkgwf.ruuvi.bean.RuuviMeasurement;
 
 /**
- * Creates {@link InfluxDBData} instances from raw dump from hcidump. An
- * instance should keep an internal state of the line previously encountered, as
- * packets from hcidump may be split across multiple lines
+ * Creates {@link InfluxDBData} instances from raw dumps from hcidump.
  */
 public interface BeaconHandler {
 

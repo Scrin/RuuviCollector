@@ -12,7 +12,7 @@ public class DataFormatV3 implements BeaconHandler {
 
     private final int[] RUUVI_COPANY_IDENTIFIER = {0x99, 0x04}; // 0x0499
     private final Map<String, Long> updatedMacs;
-    private final long updateLimit = Config.getInfluxUpdateLimit();
+    private final long updateLimit = Config.getMeasurementUpdateLimit();
 
     public DataFormatV3() {
         updatedMacs = new HashMap<>();

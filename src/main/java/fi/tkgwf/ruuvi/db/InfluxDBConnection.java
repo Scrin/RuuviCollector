@@ -24,4 +24,9 @@ public class InfluxDBConnection implements DBConnection {
         Point point = InfluxDBConverter.toInflux(measurement);
         influxDB.write(point);
     }
+
+    @Override
+    public void close() {
+        influxDB.close();
+    }
 }

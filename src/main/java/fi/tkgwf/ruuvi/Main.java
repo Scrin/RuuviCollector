@@ -3,8 +3,6 @@ package fi.tkgwf.ruuvi;
 import fi.tkgwf.ruuvi.bean.HCIData;
 import fi.tkgwf.ruuvi.config.Config;
 import fi.tkgwf.ruuvi.db.DBConnection;
-import fi.tkgwf.ruuvi.db.DummyDBConnection;
-import fi.tkgwf.ruuvi.db.LegacyInfluxDBConnection;
 import fi.tkgwf.ruuvi.handler.BeaconHandler;
 import fi.tkgwf.ruuvi.handler.impl.DataFormatV2;
 import fi.tkgwf.ruuvi.handler.impl.DataFormatV3;
@@ -36,7 +34,7 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        if (true||args.length >= 1 && args[0].equalsIgnoreCase("migrate")) {
+        if (args.length >= 1 && args[0].equalsIgnoreCase("migrate")) {
             InfluxDataMigrator migrator = new InfluxDataMigrator();
             migrator.migrate();
         } else {
@@ -46,6 +44,8 @@ public class Main {
                 System.exit(1);
             }
         }
+        LOG.info("Clean exit");
+        System.exit(0); // due to a bug in the InfluxDB library, we have to force the exit as a workaround. See: https://github.com/influxdata/influxdb-java/issues/359
     }
 
     private BufferedReader startHciListeners() throws IOException {
@@ -69,8 +69,6 @@ public class Main {
      * @return true if the run ends gracefully, false in case of severe errors
      */
     private boolean run() {
-        DBConnection db = Config.isDryrunMode() ? new DummyDBConnection() : new LegacyInfluxDBConnection();
-        HCIParser parser = new HCIParser();
         BufferedReader reader;
         try {
             reader = startHciListeners();
@@ -79,6 +77,8 @@ public class Main {
             return false;
         }
         LOG.info("BLE listener started successfully, waiting for data... \nIf you don't get any data, check that you are able to run 'hcitool lescan' and 'hcidump --raw' without issues");
+        DBConnection db = Config.getDBConnection();
+        HCIParser parser = new HCIParser();
         boolean dataReceived = false;
         try {
             String line, latestMAC = null;
@@ -111,6 +111,8 @@ public class Main {
         } catch (IOException ex) {
             LOG.error("Uncaught exception while reading measurements", ex);
             return false;
+        } finally {
+            db.close();
         }
         return true;
     }

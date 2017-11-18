@@ -7,16 +7,15 @@ package fi.tkgwf.ruuvi.bean;
  * present depending on the data format and implementations.
  */
 public class RuuviMeasurement {
-    
+
     ////////////////////
     // Special values //
     ////////////////////
-
     /**
      * Timestamp in milliseconds, normally not populated to use local time
      */
     public Long time;
-    
+
     /**
      * Friendly name for the tag
      */
@@ -92,6 +91,18 @@ public class RuuviMeasurement {
      */
     public Double accelerationTotal;
     /**
+     * The angle between the acceleration vector and X axis
+     */
+    public Double accelerationAngleFromX;
+    /**
+     * The angle between the acceleration vector and Y axis
+     */
+    public Double accelerationAngleFromY;
+    /**
+     * The angle between the acceleration vector and Z axis
+     */
+    public Double accelerationAngleFromZ;
+    /**
      * Absolute humidity in g/m^3
      */
     public Double absoluteHumidity;
@@ -107,4 +118,9 @@ public class RuuviMeasurement {
      * Density of air
      */
     public Double airDensity;
+
+    @Override
+    public String toString() {
+        return "RuuviMeasurement{" + "time=" + time + ", name=" + name + ", mac=" + mac + ", dataFormat=" + dataFormat + ", temperature=" + temperature + ", humidity=" + humidity + ", pressure=" + pressure + ", accelerationX=" + accelerationX + ", accelerationY=" + accelerationY + ", accelerationZ=" + accelerationZ + ", batteryVoltage=" + batteryVoltage + ", txPower=" + txPower + ", movementCounter=" + movementCounter + ", measurementSequenceNumber=" + measurementSequenceNumber + ", tagID=" + tagID + ", rssi=" + rssi + ", accelerationTotal=" + accelerationTotal + ", accelerationAngleFromX=" + accelerationAngleFromX + ", accelerationAngleFromY=" + accelerationAngleFromY + ", accelerationAngleFromZ=" + accelerationAngleFromZ + ", absoluteHumidity=" + absoluteHumidity + ", dewPoint=" + dewPoint + ", equilibriumVaporPressure=" + equilibriumVaporPressure + ", airDensity=" + airDensity + '}';
+    }
 }

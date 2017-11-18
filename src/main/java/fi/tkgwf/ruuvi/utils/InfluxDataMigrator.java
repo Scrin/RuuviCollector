@@ -3,7 +3,6 @@ package fi.tkgwf.ruuvi.utils;
 import fi.tkgwf.ruuvi.bean.RuuviMeasurement;
 import fi.tkgwf.ruuvi.config.Config;
 import fi.tkgwf.ruuvi.db.DBConnection;
-import fi.tkgwf.ruuvi.db.DummyDBConnection;
 import fi.tkgwf.ruuvi.db.InfluxDBConnection;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
@@ -29,6 +28,10 @@ import org.influxdb.dto.Query;
 import org.influxdb.dto.QueryResult;
 import org.influxdb.dto.QueryResult.Result;
 
+/**
+ * Terrible class for migrating a Terrible format to a more sensible one. I am
+ * sorry for what you'll find below.
+ */
 public class InfluxDataMigrator {
 
     private static final Logger LOG = Logger.getLogger(InfluxDataMigrator.class);
@@ -48,7 +51,7 @@ public class InfluxDataMigrator {
     public synchronized void migrate() {
         LOG.info("Starting migration...");
         long start = System.currentTimeMillis();
-        DBConnection db = Config.isDryrunMode() ? new DummyDBConnection() : new InfluxDBConnection();
+        DBConnection db = new InfluxDBConnection();
         // Theres a hard limit (?) of 5 concurrent queries per instance
         InfluxDB influx1 = createInfluxDB();
         InfluxDB influx2 = createInfluxDB();
@@ -112,15 +115,14 @@ public class InfluxDataMigrator {
                 while (pendingQueues()) {
                     Thread.sleep(50);
                 }
-                // debug, reduce spam by logging about 1% of the times
-                if (System.currentTimeMillis() % 100 == 0) {
-                    queues.forEach((k, v) -> {
-                        System.out.println(k + ": " + v.size() + " + " + pendingMeasurements.get(k).size() + " - " + discardedMeasurements.get(k).get());
-                    });
+                /*
+                if (System.currentTimeMillis() % 20 == 0) { // reduce "debug" spam by logging only about 5% of the times
+                    queues.forEach((k, v) -> System.out.println(k + ": " + v.size() + " + " + pendingMeasurements.get(k).size() + " - " + discardedMeasurements.get(k).get()));
                     long duration = System.currentTimeMillis() - start;
                     System.out.println("progress: " + counter + " elapsed: " + duration / 1000d + " sec " + (counter / (duration / 1000d)) + " per sec");
                     System.out.println("-----");
                 }
+                 */
                 LegacyMeasurement temperature = temperatureQueue.poll();
                 if (temperature == null) {
                     break;
@@ -165,6 +167,7 @@ public class InfluxDataMigrator {
         queues.keySet().stream().sorted().forEach(k -> LOG.info(k + " discarded: " + (pendingMeasurements.get(k).size() + discardedMeasurements.get(k).get())));
         influx1.close();
         influx2.close();
+        db.close();
     }
 
     private LegacyMeasurement find(String queueName, String mac, long time) {
@@ -198,6 +201,7 @@ public class InfluxDataMigrator {
             if (m == null) {
                 return EMPTY_MEASUREMENT;
             } else if (m.mac == null) {
+                // discard all values without MAC
             } else if (mac.equals(m.mac)) {
                 if (isValidTime.test(m)) {
                     return m;

@@ -10,4 +10,9 @@ public interface DBConnection {
      * @param measurement
      */
     void save(RuuviMeasurement measurement);
+
+    /**
+     * Closes the DB connection
+     */
+    void close();
 }

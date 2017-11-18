@@ -11,7 +11,15 @@ import org.influxdb.dto.Point;
 public class InfluxDBConverter {
 
     public static Point toInflux(RuuviMeasurement measurement) {
-        Point.Builder p = Point.measurement("ruuvi_measurements").tag("mac", measurement.mac);
+        return toInflux(measurement, Config.getStorageValues().equals("extended"));
+    }
+
+    public static Point toInflux(RuuviMeasurement measurement, boolean extended) {
+        Point.Builder p = Point.measurement(Config.getInfluxMeasurement()).tag("mac", measurement.mac);
+        String name = Config.getTagName(measurement.mac);
+        if (name != null) {
+            p.tag("name", name);
+        }
         if (measurement.dataFormat != null) {
             p.tag("dataFormat", String.valueOf(measurement.dataFormat));
         }
@@ -29,11 +37,16 @@ public class InfluxDBConverter {
         addValueIfNotNull(p, "movementCounter", measurement.movementCounter);
         addValueIfNotNull(p, "measurementSequenceNumber", measurement.measurementSequenceNumber);
         addValueIfNotNull(p, "rssi", measurement.rssi);
-        addValueIfNotNull(p, "accelerationTotal", measurement.accelerationTotal);
-        addValueIfNotNull(p, "absoluteHumidity", measurement.absoluteHumidity);
-        addValueIfNotNull(p, "dewPoint", measurement.dewPoint);
-        addValueIfNotNull(p, "equilibriumVaporPressure", measurement.equilibriumVaporPressure);
-        addValueIfNotNull(p, "airDensity", measurement.airDensity);
+        if (extended) {
+            addValueIfNotNull(p, "accelerationTotal", measurement.accelerationTotal);
+            addValueIfNotNull(p, "absoluteHumidity", measurement.absoluteHumidity);
+            addValueIfNotNull(p, "dewPoint", measurement.dewPoint);
+            addValueIfNotNull(p, "equilibriumVaporPressure", measurement.equilibriumVaporPressure);
+            addValueIfNotNull(p, "airDensity", measurement.airDensity);
+            addValueIfNotNull(p, "accelerationAngleFromX", measurement.accelerationAngleFromX);
+            addValueIfNotNull(p, "accelerationAngleFromY", measurement.accelerationAngleFromY);
+            addValueIfNotNull(p, "accelerationAngleFromZ", measurement.accelerationAngleFromZ);
+        }
         return p.build();
     }
 

@@ -1,15 +1,22 @@
 package fi.tkgwf.ruuvi.config;
 
+import fi.tkgwf.ruuvi.db.DBConnection;
+import fi.tkgwf.ruuvi.db.DummyDBConnection;
+import fi.tkgwf.ruuvi.db.InfluxDBConnection;
+import fi.tkgwf.ruuvi.db.LegacyInfluxDBConnection;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Predicate;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 public abstract class Config {
@@ -18,17 +25,21 @@ public abstract class Config {
 
     private static String influxUrl = "http://localhost:8086";
     private static String influxDatabase = "ruuvi";
+    private static String influxMeasurement = "ruuvi_measurements";
     private static String influxUser = "ruuvi";
     private static String influxPassword = "ruuvi";
-    private static long influxUpdateLimit = 9900;
-    private static String operationMode = "normal";
+    private static long measurementUpdateLimit = 9900;
+    private static String storageMethod = "influxdb";
+    private static String storageValues = "extended";
     private static Predicate<String> filterMode = (s) -> true;
     private static final Set<String> FILTER_MACS = new HashSet<>();
+    private static final Map<String, String> TAG_NAMES = new HashMap<>();
     private static String[] scanCommand = {"hcitool", "lescan", "--duplicates", "--passive"};
     private static String[] dumpCommand = {"hcidump", "--raw"};
 
     static {
         readConfig();
+        readTagNames();
     }
 
     private static void readConfig() {
@@ -55,21 +66,27 @@ public abstract class Config {
                         case "influxDatabase":
                             influxDatabase = value;
                             break;
+                        case "influxMeasurement":
+                            influxMeasurement = value;
+                            break;
                         case "influxUser":
                             influxUser = value;
                             break;
                         case "influxPassword":
                             influxPassword = value;
                             break;
-                        case "influxUpdateLimit":
+                        case "measurementUpdateLimit":
                             try {
-                                influxUpdateLimit = Long.parseLong(value);
+                                measurementUpdateLimit = Long.parseLong(value);
                             } catch (NumberFormatException ex) {
                                 LOG.warn("Malformed number format for influxUpdateLimit: '" + value + '\'');
                             }
                             break;
-                        case "operationMode":
-                            operationMode = value;
+                        case "storage.method":
+                            storageMethod = value;
+                            break;
+                        case "storage.values":
+                            storageValues = value;
                             break;
                         case "filter.mode":
                             switch (value) {
@@ -84,6 +101,7 @@ public abstract class Config {
                             Arrays.stream(value.split(","))
                                     .map(String::trim)
                                     .filter(s -> s.length() == 12)
+                                    .map(String::toUpperCase)
                                     .forEach(FILTER_MACS::add);
                             break;
                         case "command.scan":
@@ -100,8 +118,48 @@ public abstract class Config {
         }
     }
 
-    public static boolean isDryrunMode() {
-        return operationMode.equals("dryrun");
+    private static void readTagNames() {
+        try {
+            File jarLocation = new File(Config.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getParentFile();
+            File[] configFiles = jarLocation.listFiles(f -> f.isFile() && f.getName().equals("ruuvi-names.properties"));
+            if (configFiles == null || configFiles.length == 0) {
+                // look for config files in the parent directory if none found in the current directory, this is useful during development when
+                // RuuviCollector can be run from maven target directory directly while the config file sits in the project root
+                configFiles = jarLocation.getParentFile().listFiles(f -> f.isFile() && f.getName().equals("ruuvi-names.properties"));
+            }
+            if (configFiles != null && configFiles.length > 0) {
+                LOG.debug("Tag names: " + configFiles[0]);
+                Properties props = new Properties();
+                props.load(new FileInputStream(configFiles[0]));
+                Enumeration<?> e = props.propertyNames();
+                while (e.hasMoreElements()) {
+                    String key = StringUtils.trimToEmpty((String) e.nextElement()).toUpperCase();
+                    String value = StringUtils.trimToEmpty(props.getProperty(key));
+                    if (key.length() == 12 && value.length() > 0) {
+                        TAG_NAMES.put(key, value);
+                    }
+                }
+            }
+        } catch (URISyntaxException | IOException ex) {
+            LOG.warn("Failed to read tag names", ex);
+        }
+    }
+
+    public static DBConnection getDBConnection() {
+        switch (storageMethod) {
+            case "influxdb":
+                return new InfluxDBConnection();
+            case "influxdb_legacy":
+                return new LegacyInfluxDBConnection();
+            case "dummy":
+                return new DummyDBConnection();
+            default:
+                throw new IllegalArgumentException("Invalid storage method: " + storageMethod);
+        }
+    }
+
+    public static String getStorageValues() {
+        return storageValues;
     }
 
     public static String getInfluxUrl() {
@@ -112,6 +170,10 @@ public abstract class Config {
         return influxDatabase;
     }
 
+    public static String getInfluxMeasurement() {
+        return influxMeasurement;
+    }
+
     public static String getInfluxUser() {
         return influxUser;
     }
@@ -120,8 +182,8 @@ public abstract class Config {
         return influxPassword;
     }
 
-    public static long getInfluxUpdateLimit() {
-        return influxUpdateLimit;
+    public static long getMeasurementUpdateLimit() {
+        return measurementUpdateLimit;
     }
 
     public static boolean isAllowedMAC(String mac) {
@@ -134,5 +196,9 @@ public abstract class Config {
 
     public static String[] getDumpCommand() {
         return dumpCommand;
+    }
+
+    public static String getTagName(String mac) {
+        return TAG_NAMES.get(mac);
     }
 }

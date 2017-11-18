@@ -1,0 +1,9 @@
+# Optional, additional friendly names for tags (useful when used with Grafana for example)
+# Copy this file as "ruuvi-names.properties" to the same directory as the collector application itself.
+# The names are applied only to new measurements, this allows you to change the tag names without 
+# affecting the names in past measurements, for example if you move a tag to a new place
+# format is: MAC=Name of the tag
+# Examples:
+D04AB59C588B=Indoors
+D944923E0B70=Terrace
+F97C9896E88F=Fridge

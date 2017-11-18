@@ -24,4 +24,9 @@ public class LegacyInfluxDBConnection implements DBConnection {
         BatchPoints points = InfluxDBConverter.toLegacyInflux(measurement);
         influxDB.write(points);
     }
+
+    @Override
+    public void close() {
+        influxDB.close();
+    }
 }
