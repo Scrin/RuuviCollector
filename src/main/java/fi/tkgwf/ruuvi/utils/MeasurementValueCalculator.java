@@ -47,7 +47,7 @@ public class MeasurementValueCalculator {
      * @return Angle between the components axis and the vector, in degrees
      */
     public static Double angleBetweenVectorComponentAndAxis(Double vectorComponent, Double vectorLength) {
-        if (vectorComponent == null || vectorLength == null) {
+        if (vectorComponent == null || vectorLength == null || vectorLength == 0) {
             return null;
         }
         return Math.toDegrees(Math.acos(vectorComponent / vectorLength));

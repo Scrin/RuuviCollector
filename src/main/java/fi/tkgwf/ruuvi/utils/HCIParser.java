@@ -11,6 +11,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class HCIParser {
 
+    private boolean sendingData;
     private int indexInPacket;
     private int indexInReport;
     private int indexInADData;
@@ -37,9 +38,15 @@ public class HCIParser {
             return null; // ignore blank lines
         }
         line = line.trim();
-        if (line.charAt(0) == '>') {
+        if (line.charAt(0) == '>') { // new incoming packet begins
             reset();
-            line = line.substring(1).trim();
+            line = line.substring(1).trim(); // discard the > char
+        }
+        if (line.charAt(0) == '<') { // new outgoing packet begins
+            sendingData = true;
+        }
+        if (sendingData) {
+            return null; // currently reading a packet that is being sent rather than received, ignore it
         }
         byte[] lineData = RuuviUtils.hexToBytes(line);
         int i = 0;
@@ -55,6 +62,7 @@ public class HCIParser {
     }
 
     private void reset() {
+        sendingData = false;
         indexInPacket = 0;
         indexInReport = 0;
         indexInADData = 0;

@@ -33,7 +33,7 @@
 # Storage method, currently valid values: "influxdb", "legacy_influxdb" and "dummy"
 # influxdb        = Recommended and default, this stores the values to InfluxDB into a single measurement
 # influxdb_legacy = The old format used by this collector on versions before 0.2.0, stores values into separate measurements.
-#                   NOTE: influxdb_legacy is no longer supported, you should use the new influxdb format and migrate old data, see README.md
+#                   NOTE: influxdb_legacy is no longer supported, you should use the new influxdb format and migrate old data, see CHANGELOG.md
 # dummy           = Logs the measurements to the log rather than sending them anywhere, feasible for testing and development
 #storage.method=influxdb
 
