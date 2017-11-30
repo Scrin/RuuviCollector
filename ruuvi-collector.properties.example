@@ -3,7 +3,7 @@
 # uncomment the lines and change the values, if you need
 
 # Base url to connect to, including protocol, hostname or ip address, and port
-#influxUrlBase=http://localhost:8086
+#influxUrl=http://localhost:8086
 
 # InfluxDB Database to use for measurements
 #influxDatabase=ruuvi
