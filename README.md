@@ -9,8 +9,9 @@ Note: As this is the first release of this application, there is very little doc
 Supports following RuuviTag [Data Formats](https://github.com/ruuvi/ruuvi-sensor-protocols):
 
  - Data Format 2: Eddystone-URL, URL-safe base64 -encoded, kickstarter edition
- - Data Format 3: BLE Manufacturer specific data, all current sensor readings
+ - Data Format 3: "RAW v1" BLE Manufacturer specific data, all current sensor readings
  - Data Format 4: Eddystone-URL, URL-safe base64 -encoded, with tag id.
+ - Data Format 5: "RAW v2" BLE Manufacturer specific data, all current sensor readings + extra
 
 Supports following data from the tag (depending on tag firmware):
 
@@ -19,7 +20,10 @@ Supports following data from the tag (depending on tag firmware):
  - Air pressure (Pascal)
  - Acceleration for X, Y and Z axes (g)
  - Battery voltage (Volts)
+ - TX power (dBm)
  - RSSI (Signal strength *at the receiver*, dBm)
+ - Movement counter (Running counter incremented each time a motion detection interrupt is received)
+ - Measurement sequence number (Running counter incremented each time a new measurement is taken on the tag)
 
 Ability to calculate following values in addition to the raw data (the accuracy of these values are approximations):
 
