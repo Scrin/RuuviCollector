@@ -48,7 +48,7 @@ public class HCIParser {
         if (sendingData) {
             return null; // currently reading a packet that is being sent rather than received, ignore it
         }
-        byte[] lineData = RuuviUtils.hexToBytes(line);
+        byte[] lineData = Utils.hexToBytes(line);
         int i = 0;
         for (; i < lineData.length; i++, indexInPacket++) {
             handleByte(lineData[i]);

@@ -11,7 +11,7 @@ import fi.tkgwf.ruuvi.utils.HCIParser;
 import fi.tkgwf.ruuvi.utils.InfluxDataMigrator;
 import fi.tkgwf.ruuvi.utils.MeasurementValueCalculator;
 import fi.tkgwf.ruuvi.handler.impl.DataFormatV5;
-import fi.tkgwf.ruuvi.utils.RuuviUtils;
+import fi.tkgwf.ruuvi.utils.Utils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -95,7 +95,7 @@ public class Main {
                 }
                 try {
                     if (line.startsWith("> ")) {
-                        latestMAC = RuuviUtils.getMacFromLine(line.substring(23));
+                        latestMAC = Utils.getMacFromLine(line.substring(23));
                     }
                     HCIData hciData = parser.readLine(line);
                     if (hciData != null) {
