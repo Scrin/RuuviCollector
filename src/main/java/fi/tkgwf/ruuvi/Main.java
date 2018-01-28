@@ -94,7 +94,7 @@ public class Main {
                     }
                 }
                 try {
-                    if (line.startsWith("> ")) {
+                    if (line.startsWith("> ") && line.length() > 23) {
                         latestMAC = Utils.getMacFromLine(line.substring(23));
                     }
                     HCIData hciData = parser.readLine(line);
@@ -107,6 +107,7 @@ public class Main {
                     }
                 } catch (Exception ex) {
                     LOG.warn("Uncaught exception while handling measurements from MAC address \"" + latestMAC + "\", if this repeats and this is not a Ruuvitag, consider blacklisting it", ex);
+                    LOG.debug("Offending line: " + line);
                     beaconHandlers.forEach(BeaconHandler::reset);
                 }
             }
