@@ -1,5 +1,9 @@
 # Changelog
 
+### v0.2.1
+
+ - Support for data format 5 ("RAW v2")
+
 ## v0.2.0
 
  - Major refactoring in the application logic
