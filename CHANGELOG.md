@@ -1,5 +1,9 @@
 # Changelog
 
+### v0.2.2
+
+ - Fixed a rare crash when hcidump was returning invalid data
+
 ### v0.2.1
 
  - Support for data format 5 ("RAW v2")
