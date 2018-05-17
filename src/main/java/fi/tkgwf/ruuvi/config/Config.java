@@ -28,6 +28,11 @@ public abstract class Config {
     private static String influxMeasurement = "ruuvi_measurements";
     private static String influxUser = "ruuvi";
     private static String influxPassword = "ruuvi";
+    private static String influxRetentionPolicy = "autogen";
+    private static boolean influxGzip = true;
+    private static boolean influxBatch = true;
+    private static int influxBatchMaxSize = 2000;
+    private static int influxBatchMaxTimeMs = 100;
     private static long measurementUpdateLimit = 9900;
     private static String storageMethod = "influxdb";
     private static String storageValues = "extended";
@@ -110,6 +115,29 @@ public abstract class Config {
                         case "command.dump":
                             dumpCommand = value.split(" ");
                             break;
+                        case "influxRetentionPolicy":
+                            influxRetentionPolicy = value;
+                            break;
+                        case "influxGzip":
+                            influxGzip = Boolean.parseBoolean(value);
+                            break;
+                        case "influxBatch":
+                            influxBatch = Boolean.parseBoolean(value);
+                            break;
+                        case "influxBatchMaxSize":
+                            try {
+                                influxBatchMaxSize = Integer.parseInt(value);
+                            } catch (NumberFormatException ex) {
+                                LOG.warn("Malformed number format for influxBatchMaxSize: '" + value + '\'');
+                            }
+                            break;
+                        case "influxBatchMaxTime":
+                            try {
+                                influxBatchMaxTimeMs = Integer.parseInt(value);
+                            } catch (NumberFormatException ex) {
+                                LOG.warn("Malformed number format for influxBatchMaxTime: '" + value + '\'');
+                            }
+                            break;
                     }
                 }
             }
@@ -180,6 +208,26 @@ public abstract class Config {
 
     public static String getInfluxPassword() {
         return influxPassword;
+    }
+
+    public static String getInfluxRetentionPolicy() {
+        return influxRetentionPolicy;
+    }
+
+    public static boolean isInfluxGzip() {
+        return influxGzip;
+    }
+
+    public static boolean isInfluxBatch() {
+        return influxBatch;
+    }
+
+    public static int getInfluxBatchMaxSize() {
+        return influxBatchMaxSize;
+    }
+
+    public static int getInfluxBatchMaxTimeMs() {
+        return influxBatchMaxTimeMs;
     }
 
     public static long getMeasurementUpdateLimit() {

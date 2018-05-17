@@ -44,9 +44,27 @@
 #            NOTE: the influxdb_legacy storage method does not support extended values
 #storage.values=extended
 
+
+#
+# Advanced configuration - Change these only if you know what you are doing
+#
+
 # Commands for starting the BLE scanning and the dump.
 # The scan command is only executed, output and exit is ignored. Setting this blank will disable this command.
 # The dump command is executed and it's output is parsed, the collector will exit when/if this command ends
 # In general you want to change these only if you intend to use wrapper scripts or you need to use absolute paths to the executables
 #command.scan=hcitool lescan --duplicates --passive
 #command.dump=hcidump --raw
+
+# Retention policy to use (note: you must create it yourself)
+#influxRetentionPolicy=autogen
+
+# Use gzip, saves bandwidth at minimal CPU cost
+#influxGzip=true
+
+# Use batch mode, improved performance at the cost of increased delay for measurements to show up. Does not affect the timestamps.
+#influxBatch=true
+
+# Maximum number of datapoints and maximum time waited in milliseconds before sending a batch. Has no effect if batch mode disabled.
+#influxBatchMaxSize=2000
+#influxBatchMaxTime=100

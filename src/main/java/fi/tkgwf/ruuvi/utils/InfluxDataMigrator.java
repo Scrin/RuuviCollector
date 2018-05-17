@@ -51,7 +51,7 @@ public class InfluxDataMigrator {
     public synchronized void migrate() {
         LOG.info("Starting migration...");
         long start = System.currentTimeMillis();
-        DBConnection db = new InfluxDBConnection();
+        DBConnection db = Config.getDBConnection();
         // Theres a hard limit (?) of 5 concurrent queries per instance
         InfluxDB influx1 = createInfluxDB();
         InfluxDB influx2 = createInfluxDB();

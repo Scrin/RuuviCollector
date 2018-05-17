@@ -1,5 +1,9 @@
 # Changelog
 
+### v0.2.3
+
+ - Added advanced configuration options for InfluxDB
+
 ### v0.2.2
 
  - Fixed a rare crash when hcidump was returning invalid data
