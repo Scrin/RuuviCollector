@@ -88,3 +88,19 @@ Easily compile and run while developing:
 ```
 mvn compile exec:java
 ```
+
+### Docker
+
+Dockerized installation is possible with the bundled Dockerfile, which is particularly useful for "server-grade" installations. The Docker image can be built with for example:
+
+```sh
+docker build -t ruuvi-collector .
+```
+
+Note: if you have configuration files present in the current directory, they will be added to the built image. Alternatively they can be mounted inside the container while running.
+
+Depending on the configuration, it may be necessary to use `--net=host` (to access the host network stack directly) and/or `--privileged` (to access a local BLE adapter directly), for example:
+
+```sh
+docker run --name ruuvi-collector --privileged --net=host -d ruuvi-collector
+```
