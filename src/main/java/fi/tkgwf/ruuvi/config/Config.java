@@ -13,6 +13,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -22,6 +23,7 @@ import org.apache.log4j.Logger;
 public abstract class Config {
 
     private static final Logger LOG = Logger.getLogger(Config.class);
+    private static final String RUUVI_COLLECTOR_PROPERTIES = "ruuvi-collector.properties";
 
     private static String influxUrl = "http://localhost:8086";
     private static String influxDatabase = "ruuvi";
@@ -50,11 +52,25 @@ public abstract class Config {
     private static void readConfig() {
         try {
             File jarLocation = new File(Config.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getParentFile();
-            File[] configFiles = jarLocation.listFiles(f -> f.isFile() && f.getName().equals("ruuvi-collector.properties"));
+            File[] configFiles = jarLocation.listFiles(f -> f.isFile() && f.getName().equals(RUUVI_COLLECTOR_PROPERTIES));
             if (configFiles == null || configFiles.length == 0) {
                 // look for config files in the parent directory if none found in the current directory, this is useful during development when
                 // RuuviCollector can be run from maven target directory directly while the config file sits in the project root
-                configFiles = jarLocation.getParentFile().listFiles(f -> f.isFile() && f.getName().equals("ruuvi-collector.properties"));
+                configFiles = jarLocation.getParentFile().listFiles(f -> f.isFile() && f.getName().equals(RUUVI_COLLECTOR_PROPERTIES));
+                if (configFiles == null || configFiles.length == 0) {
+                    // Finally, let the class loader try to look for the config file resource:
+                    configFiles = Optional.ofNullable(Config.class.getResource(String.format("/%s", RUUVI_COLLECTOR_PROPERTIES)))
+                            .map(url -> {
+                                try {
+                                    return url.toURI();
+                                } catch (final URISyntaxException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            })
+                            .map(File::new)
+                            .map(f -> new File[]{f})
+                            .orElse(null);
+                }
             }
             if (configFiles != null && configFiles.length > 0) {
                 LOG.debug("Config: " + configFiles[0]);
