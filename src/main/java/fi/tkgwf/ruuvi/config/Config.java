@@ -52,27 +52,7 @@ public abstract class Config {
 
     private static void readConfig() {
         try {
-            File jarLocation = new File(Config.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getParentFile();
-            File[] configFiles = jarLocation.listFiles(f -> f.isFile() && f.getName().equals(RUUVI_COLLECTOR_PROPERTIES));
-            if (configFiles == null || configFiles.length == 0) {
-                // look for config files in the parent directory if none found in the current directory, this is useful during development when
-                // RuuviCollector can be run from maven target directory directly while the config file sits in the project root
-                configFiles = jarLocation.getParentFile().listFiles(f -> f.isFile() && f.getName().equals(RUUVI_COLLECTOR_PROPERTIES));
-                if (configFiles == null || configFiles.length == 0) {
-                    // Finally, let the class loader try to look for the config file resource:
-                    configFiles = Optional.ofNullable(Config.class.getResource(String.format("/%s", RUUVI_COLLECTOR_PROPERTIES)))
-                            .map(url -> {
-                                try {
-                                    return url.toURI();
-                                } catch (final URISyntaxException e) {
-                                    throw new RuntimeException(e);
-                                }
-                            })
-                            .map(File::new)
-                            .map(f -> new File[]{f})
-                            .orElse(null);
-                }
-            }
+            final File[] configFiles = findConfigFiles(RUUVI_COLLECTOR_PROPERTIES);
             if (configFiles != null && configFiles.length > 0) {
                 LOG.debug("Config: " + configFiles[0]);
                 Properties props = new Properties();
@@ -163,29 +143,34 @@ public abstract class Config {
         }
     }
 
+    private static File[] findConfigFiles(final String propertiesFileName) throws URISyntaxException {
+        File jarLocation = new File(Config.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getParentFile();
+        File[] configFiles = jarLocation.listFiles(f -> f.isFile() && f.getName().equals(propertiesFileName));
+        if (configFiles == null || configFiles.length == 0) {
+            // look for config files in the parent directory if none found in the current directory, this is useful during development when
+            // RuuviCollector can be run from maven target directory directly while the config file sits in the project root
+            configFiles = jarLocation.getParentFile().listFiles(f -> f.isFile() && f.getName().equals(propertiesFileName));
+            if (configFiles == null || configFiles.length == 0) {
+                // Finally, let the class loader try to look for the config file resource:
+                configFiles = Optional.ofNullable(Config.class.getResource(String.format("/%s", propertiesFileName)))
+                        .map(url -> {
+                            try {
+                                return url.toURI();
+                            } catch (final URISyntaxException e) {
+                                throw new RuntimeException(e);
+                            }
+                        })
+                        .map(File::new)
+                        .map(f -> new File[]{f})
+                        .orElse(null);
+            }
+        }
+        return configFiles;
+    }
+
     private static void readTagNames() {
         try {
-            File jarLocation = new File(Config.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getParentFile();
-            File[] configFiles = jarLocation.listFiles(f -> f.isFile() && f.getName().equals(RUUVI_NAMES_PROPERTIES));
-            if (configFiles == null || configFiles.length == 0) {
-                // look for config files in the parent directory if none found in the current directory, this is useful during development when
-                // RuuviCollector can be run from maven target directory directly while the config file sits in the project root
-                configFiles = jarLocation.getParentFile().listFiles(f -> f.isFile() && f.getName().equals(RUUVI_NAMES_PROPERTIES));
-                if (configFiles == null || configFiles.length == 0) {
-                    // Finally, let the class loader try to look for the config file resource:
-                    configFiles = Optional.ofNullable(Config.class.getResource(String.format("/%s", RUUVI_NAMES_PROPERTIES)))
-                            .map(url -> {
-                                try {
-                                    return url.toURI();
-                                } catch (final URISyntaxException e) {
-                                    throw new RuntimeException(e);
-                                }
-                            })
-                            .map(File::new)
-                            .map(f -> new File[]{f})
-                            .orElse(null);
-                }
-            }
+            final File[] configFiles = findConfigFiles(RUUVI_NAMES_PROPERTIES);
             if (configFiles != null && configFiles.length > 0) {
                 LOG.debug("Tag names: " + configFiles[0]);
                 Properties props = new Properties();
