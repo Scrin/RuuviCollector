@@ -52,11 +52,11 @@ public abstract class Config {
 
     private static void readConfig() {
         try {
-            final File[] configFiles = findConfigFiles(RUUVI_COLLECTOR_PROPERTIES);
-            if (configFiles != null && configFiles.length > 0) {
-                LOG.debug("Config: " + configFiles[0]);
+            final File configFile = findConfigFiles(RUUVI_COLLECTOR_PROPERTIES);
+            if (configFile != null) {
+                LOG.debug("Config: " + configFile);
                 Properties props = new Properties();
-                props.load(new FileInputStream(configFiles[0]));
+                props.load(new FileInputStream(configFile));
                 Enumeration<?> e = props.propertyNames();
                 while (e.hasMoreElements()) {
                     String key = (String) e.nextElement();
@@ -143,7 +143,7 @@ public abstract class Config {
         }
     }
 
-    private static File[] findConfigFiles(final String propertiesFileName) throws URISyntaxException {
+    private static File findConfigFiles(final String propertiesFileName) throws URISyntaxException {
         File jarLocation = new File(Config.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getParentFile();
         File[] configFiles = jarLocation.listFiles(f -> f.isFile() && f.getName().equals(propertiesFileName));
         if (configFiles == null || configFiles.length == 0) {
@@ -165,16 +165,16 @@ public abstract class Config {
                         .orElse(null);
             }
         }
-        return configFiles;
+        return Optional.ofNullable(configFiles).map(f -> f[0]).orElse(null);
     }
 
     private static void readTagNames() {
         try {
-            final File[] configFiles = findConfigFiles(RUUVI_NAMES_PROPERTIES);
-            if (configFiles != null && configFiles.length > 0) {
-                LOG.debug("Tag names: " + configFiles[0]);
+            final File configFile = findConfigFiles(RUUVI_NAMES_PROPERTIES);
+            if (configFile != null) {
+                LOG.debug("Tag names: " + configFile);
                 Properties props = new Properties();
-                props.load(new FileInputStream(configFiles[0]));
+                props.load(new FileInputStream(configFile));
                 Enumeration<?> e = props.propertyNames();
                 while (e.hasMoreElements()) {
                     String key = StringUtils.trimToEmpty((String) e.nextElement()).toUpperCase();
