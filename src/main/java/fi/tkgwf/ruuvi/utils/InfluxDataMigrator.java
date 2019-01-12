@@ -50,7 +50,7 @@ public class InfluxDataMigrator {
 
     public synchronized void migrate() {
         LOG.info("Starting migration...");
-        long start = System.currentTimeMillis();
+        long start = Config.currentTimeMillis();
         DBConnection db = Config.getDBConnection();
         // Theres a hard limit (?) of 5 concurrent queries per instance
         InfluxDB influx1 = createInfluxDB();
@@ -162,7 +162,7 @@ public class InfluxDataMigrator {
         } catch (InterruptedException ex) {
             LOG.error("Interrupted", ex);
         }
-        long duration = System.currentTimeMillis() - start;
+        long duration = Config.currentTimeMillis() - start;
         LOG.info("Finished migration! " + counter + " measurements migrated, took " + duration / 1000d + " seconds (" + (counter / (duration / 1000d)) + " measurements per second)");
         queues.keySet().stream().sorted().forEach(k -> LOG.info(k + " discarded: " + (pendingMeasurements.get(k).size() + discardedMeasurements.get(k).get())));
         influx1.close();

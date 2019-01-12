@@ -87,7 +87,7 @@ public class DataFormatV5 implements BeaconHandler {
             return false;
         }
         Long lastUpdate = updatedMacs.get(mac);
-        final long currentTime = System.currentTimeMillis();
+        final long currentTime = Config.currentTimeMillis();
         if (lastUpdate == null || lastUpdate + updateLimit < currentTime) {
             updatedMacs.put(mac, currentTime);
             return true;

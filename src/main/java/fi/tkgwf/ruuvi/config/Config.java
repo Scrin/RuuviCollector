@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.time.Clock;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -44,6 +45,7 @@ public abstract class Config {
     private static final Map<String, String> TAG_NAMES = new HashMap<>();
     private static String[] scanCommand = {"hcitool", "lescan", "--duplicates", "--passive"};
     private static String[] dumpCommand = {"hcidump", "--raw"};
+    private static Clock clock = Clock.systemUTC();
 
     static {
         readConfig();
@@ -264,5 +266,9 @@ public abstract class Config {
 
     public static String getTagName(String mac) {
         return TAG_NAMES.get(mac);
+    }
+
+    public static long currentTimeMillis() {
+        return clock.millis();
     }
 }
