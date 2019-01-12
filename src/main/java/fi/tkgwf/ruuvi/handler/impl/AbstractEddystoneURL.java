@@ -85,8 +85,9 @@ public abstract class AbstractEddystoneURL implements BeaconHandler {
             return false;
         }
         Long lastUpdate = updatedMacs.get(mac);
-        if (lastUpdate == null || lastUpdate + updateLimit < System.currentTimeMillis()) {
-            updatedMacs.put(mac, System.currentTimeMillis());
+        final long currentTime = System.currentTimeMillis();
+        if (lastUpdate == null || lastUpdate + updateLimit < currentTime) {
+            updatedMacs.put(mac, currentTime);
             return true;
         }
         return false;
