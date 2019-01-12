@@ -1,5 +1,7 @@
 package fi.tkgwf.ruuvi.bean;
 
+import java.util.Objects;
+
 /**
  * This class contains all the possible fields/data acquirable from a RuuviTag
  * in a "human format", for example the temperature as a decimal number rather
@@ -122,5 +124,44 @@ public class RuuviMeasurement {
     @Override
     public String toString() {
         return "RuuviMeasurement{" + "time=" + time + ", name=" + name + ", mac=" + mac + ", dataFormat=" + dataFormat + ", temperature=" + temperature + ", humidity=" + humidity + ", pressure=" + pressure + ", accelerationX=" + accelerationX + ", accelerationY=" + accelerationY + ", accelerationZ=" + accelerationZ + ", batteryVoltage=" + batteryVoltage + ", txPower=" + txPower + ", movementCounter=" + movementCounter + ", measurementSequenceNumber=" + measurementSequenceNumber + ", tagID=" + tagID + ", rssi=" + rssi + ", accelerationTotal=" + accelerationTotal + ", accelerationAngleFromX=" + accelerationAngleFromX + ", accelerationAngleFromY=" + accelerationAngleFromY + ", accelerationAngleFromZ=" + accelerationAngleFromZ + ", absoluteHumidity=" + absoluteHumidity + ", dewPoint=" + dewPoint + ", equilibriumVaporPressure=" + equilibriumVaporPressure + ", airDensity=" + airDensity + '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        final RuuviMeasurement that = (RuuviMeasurement) o;
+        return Objects.equals(time, that.time) &&
+            Objects.equals(name, that.name) &&
+            Objects.equals(mac, that.mac) &&
+            Objects.equals(dataFormat, that.dataFormat) &&
+            Objects.equals(temperature, that.temperature) &&
+            Objects.equals(humidity, that.humidity) &&
+            Objects.equals(pressure, that.pressure) &&
+            Objects.equals(accelerationX, that.accelerationX) &&
+            Objects.equals(accelerationY, that.accelerationY) &&
+            Objects.equals(accelerationZ, that.accelerationZ) &&
+            Objects.equals(batteryVoltage, that.batteryVoltage) &&
+            Objects.equals(txPower, that.txPower) &&
+            Objects.equals(movementCounter, that.movementCounter) &&
+            Objects.equals(measurementSequenceNumber, that.measurementSequenceNumber) &&
+            Objects.equals(tagID, that.tagID) &&
+            Objects.equals(rssi, that.rssi) &&
+            Objects.equals(accelerationTotal, that.accelerationTotal) &&
+            Objects.equals(accelerationAngleFromX, that.accelerationAngleFromX) &&
+            Objects.equals(accelerationAngleFromY, that.accelerationAngleFromY) &&
+            Objects.equals(accelerationAngleFromZ, that.accelerationAngleFromZ) &&
+            Objects.equals(absoluteHumidity, that.absoluteHumidity) &&
+            Objects.equals(dewPoint, that.dewPoint) &&
+            Objects.equals(equilibriumVaporPressure, that.equilibriumVaporPressure) &&
+            Objects.equals(airDensity, that.airDensity);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(time, name, mac, dataFormat, temperature, humidity, pressure, accelerationX, accelerationY,
+            accelerationZ, batteryVoltage, txPower, movementCounter, measurementSequenceNumber, tagID, rssi,
+            accelerationTotal, accelerationAngleFromX, accelerationAngleFromY, accelerationAngleFromZ, absoluteHumidity,
+            dewPoint, equilibriumVaporPressure, airDensity);
     }
 }
