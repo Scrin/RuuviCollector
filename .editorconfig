@@ -4,9 +4,11 @@ indent_style = space
 indent_size = 4
 trim_trailing_whitespace = true
 
-[*.java, *.md]
-end_of_line = lf
+[*.{java,md}]
 charset = utf-8
+
+# Java files with both crlf and lf linebreaks exist in this project. :( Commenting this one out for now:
+#end_of_line = lf
 
 [*.properties]
 charset = latin1
