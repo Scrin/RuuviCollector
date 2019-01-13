@@ -46,6 +46,7 @@ public abstract class Config {
     private static String[] scanCommand = {"hcitool", "lescan", "--duplicates", "--passive"};
     private static String[] dumpCommand = {"hcidump", "--raw"};
     private static Clock clock = Clock.systemUTC();
+    private static DBConnection customDBConnection = null;
 
     static {
         readConfig();
@@ -200,7 +201,15 @@ public abstract class Config {
             case "dummy":
                 return new DummyDBConnection();
             default:
-                throw new IllegalArgumentException("Invalid storage method: " + storageMethod);
+                try {
+                    LOG.info("Trying to use custom DB connection class: " + storageMethod);
+                    if (customDBConnection == null) {
+                        customDBConnection = (DBConnection) Class.forName(storageMethod).newInstance();
+                    }
+                    return customDBConnection;
+                } catch (final Exception e) {
+                    throw new IllegalArgumentException("Invalid storage method: " + storageMethod, e);
+                }
         }
     }
 

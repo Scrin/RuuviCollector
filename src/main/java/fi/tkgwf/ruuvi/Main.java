@@ -27,7 +27,7 @@ public class Main {
 
     private final List<BeaconHandler> beaconHandlers = new LinkedList<>();
 
-    public void initializeHandlers() {
+    private void initializeHandlers() {
         beaconHandlers.add(new DataFormatV2());
         beaconHandlers.add(new DataFormatV3());
         beaconHandlers.add(new DataFormatV4());
@@ -40,7 +40,6 @@ public class Main {
             migrator.migrate();
         } else {
             Main m = new Main();
-            m.initializeHandlers();
             if (!m.run()) {
                 System.exit(1);
             }
@@ -69,7 +68,7 @@ public class Main {
      *
      * @return true if the run ends gracefully, false in case of severe errors
      */
-    private boolean run() {
+    public boolean run() {
         BufferedReader reader;
         try {
             reader = startHciListeners();
@@ -78,6 +77,13 @@ public class Main {
             return false;
         }
         LOG.info("BLE listener started successfully, waiting for data... \nIf you don't get any data, check that you are able to run 'hcitool lescan' and 'hcidump --raw' without issues");
+        return run(reader);
+    }
+
+    boolean run(final BufferedReader reader) {
+        if (beaconHandlers.isEmpty()) {
+            initializeHandlers();
+        }
         HCIParser parser = new HCIParser();
         boolean dataReceived = false;
         try (final PersistenceService persistenceService = new PersistenceService()) {
