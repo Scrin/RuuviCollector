@@ -3,7 +3,9 @@ package fi.tkgwf.ruuvi.config;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ConfigTest {
     @Test
@@ -12,8 +14,25 @@ class ConfigTest {
     }
 
     @Test
-    void testOverriddenValue() {
+    void testOverriddenStringValue() {
         assertEquals("testing", Config.getInfluxPassword());
+    }
+
+    @Test
+    void testOverriddenIntegerValue() {
+        assertEquals(1234, Config.getInfluxBatchMaxSize());
+    }
+
+    @Test
+    void testOverriddenBooleanValue() {
+        assertFalse(Config.isInfluxGzip());
+    }
+
+    @Test
+    void testOverriddenMacFilterList() {
+        assertFalse(Config.isAllowedMAC("ABCDEF012345"));
+        assertFalse(Config.isAllowedMAC("F1E2D3C4B5A6"));
+        assertTrue(Config.isAllowedMAC("123000000456"));
     }
 
     @Test
