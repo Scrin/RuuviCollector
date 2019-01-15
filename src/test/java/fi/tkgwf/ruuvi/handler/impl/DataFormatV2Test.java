@@ -6,13 +6,21 @@ import fi.tkgwf.ruuvi.bean.RuuviMeasurement;
 import fi.tkgwf.ruuvi.utils.HCIParser;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 class DataFormatV2Test {
     @Test
-    void shouldReturnNullForMessagesOfWrongFormat() {
+    void handleShouldReturnNullForMessagesOfWrongFormat() {
         final HCIData hciData = new HCIParser().readLine(TestFixture.getDataFormat3Message());
         final RuuviMeasurement result = new DataFormatV2().handle(hciData);
         assertNull(result);
+    }
+
+    @Test
+    void canHandleShouldReturnFalseForMessagesOfWrongFormat() {
+        final HCIData hciData = new HCIParser().readLine(TestFixture.getDataFormat3Message());
+        final boolean result = new DataFormatV2().canHandle(hciData);
+        assertFalse(result);
     }
 }

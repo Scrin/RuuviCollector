@@ -61,6 +61,23 @@ public class DataFormatV3 implements BeaconHandler {
         return m;
     }
 
+    @Override
+    public boolean canHandle(HCIData hciData) {
+        HCIData.Report.AdvertisementData adData = hciData.findAdvertisementDataByType(0xFF);
+        if (adData == null) {
+            return false;
+        }
+        byte[] data = adData.dataBytes();
+        if (data.length < 2 || (data[0] & 0xFF) != RUUVI_COPANY_IDENTIFIER[0] || (data[1] & 0xFF) != RUUVI_COPANY_IDENTIFIER[1]) {
+            return false;
+        }
+        data = Arrays.copyOfRange(data, 2, data.length); // discard the first 2 bytes, the company identifier
+        if (data.length < 14 || data[0] != 3) {
+            return false;
+        }
+        return true;
+    }
+
     private boolean shouldUpdate(String mac) {
         if (!Config.isAllowedMAC(mac)) {
             return false;

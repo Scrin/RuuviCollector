@@ -25,4 +25,12 @@ public interface BeaconHandler {
      */
     default void reset() {
     }
+
+    /**
+     * Tells whether this handler understands this packet.
+     *
+     * @param hciData the data parsed from hcidump
+     * @return {@code true} if this handler understands the given data, {@code false} if not.
+     */
+    boolean canHandle(HCIData hciData);
 }

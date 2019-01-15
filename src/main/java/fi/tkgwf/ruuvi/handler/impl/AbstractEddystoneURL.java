@@ -59,6 +59,12 @@ public abstract class AbstractEddystoneURL implements BeaconHandler {
         return measurement;
     }
 
+    @Override
+    public boolean canHandle(HCIData hciData) {
+        final HCIData.Report.AdvertisementData adData = hciData.findAdvertisementDataByType(0x16);
+        return adData != null && getRuuviUrlHashPart(adData.dataBytes()) != null;
+    }
+
     private String getRuuviUrlHashPart(byte[] data) {
         if (data.length < 15) {
             return null; // too short

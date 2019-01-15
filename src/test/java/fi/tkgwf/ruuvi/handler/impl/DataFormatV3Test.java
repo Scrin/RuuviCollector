@@ -15,6 +15,7 @@ import java.time.ZoneId;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DataFormatV3Test {
     @Test
@@ -61,6 +62,13 @@ class DataFormatV3Test {
         setClockToMilliseconds(90000);
         assertNotNull(dataFormat.handle(hciData));
         assertNotNull(dataFormat.handle(hciData2));
+    }
+
+    @Test
+    void canHandleShouldReturnTrueForMessagesOfRightFormat() {
+        final HCIData hciData = new HCIParser().readLine(TestFixture.getDataFormat3Message());
+        final boolean result = new DataFormatV3().canHandle(hciData);
+        assertTrue(result);
     }
 
     private void setClockToMilliseconds(final long millis) {
