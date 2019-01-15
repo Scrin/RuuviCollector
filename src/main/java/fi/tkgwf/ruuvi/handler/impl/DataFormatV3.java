@@ -11,17 +11,11 @@ import java.util.Map;
 public class DataFormatV3 implements BeaconHandler {
 
     private final int[] RUUVI_COPANY_IDENTIFIER = {0x99, 0x04}; // 0x0499
-    private final Map<String, Long> updatedMacs;
-    private final long updateLimit = Config.getMeasurementUpdateLimit();
-
-    public DataFormatV3() {
-        updatedMacs = new HashMap<>();
-    }
 
     @Override
     public RuuviMeasurement handle(HCIData hciData) {
         HCIData.Report.AdvertisementData adData = hciData.findAdvertisementDataByType(0xFF);
-        if (adData == null || !shouldUpdate(hciData.mac)) {
+        if (adData == null || !Config.isAllowedMAC(hciData.mac)) {
             return null;
         }
         byte[] data = adData.dataBytes();
@@ -78,16 +72,4 @@ public class DataFormatV3 implements BeaconHandler {
         return true;
     }
 
-    private boolean shouldUpdate(String mac) {
-        if (!Config.isAllowedMAC(mac)) {
-            return false;
-        }
-        Long lastUpdate = updatedMacs.get(mac);
-        final long currentTime = Config.currentTimeMillis();
-        if (lastUpdate == null || lastUpdate + updateLimit < currentTime) {
-            updatedMacs.put(mac, currentTime);
-            return true;
-        }
-        return false;
-    }
 }
