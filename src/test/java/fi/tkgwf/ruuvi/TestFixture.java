@@ -1,6 +1,8 @@
 package fi.tkgwf.ruuvi;
 
 public class TestFixture {
+    public static final String RSSI_BYTE = "B4";
+
     /**
      * Refer to https://github.com/ruuvi/ruuvi-sensor-protocols for the full specification
      * @return An example message in data format 2, like hcidump would return it.
