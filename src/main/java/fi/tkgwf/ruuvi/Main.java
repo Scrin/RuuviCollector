@@ -104,6 +104,7 @@ public class Main {
                     HCIData hciData = parser.readLine(line);
                     if (hciData != null) {
                         beaconHandlers.stream()
+                                .filter(handler -> handler.canHandle(hciData))
                                 .map(handler -> handler.handle(hciData))
                                 .filter(Objects::nonNull)
                                 .map(MeasurementValueCalculator::calculateAllValues)

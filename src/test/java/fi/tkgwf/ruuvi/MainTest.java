@@ -129,25 +129,15 @@ class MainTest {
         @Override
         public long millis() {
             final long millis = instants.get(readCount).toEpochMilli();
-            if (isCalledFromHandler3()) readCount++;
+            readCount++;
             return millis;
         }
 
         @Override
         public Instant instant() {
             final Instant instant = instants.get(readCount);
-            if (isCalledFromHandler3()) readCount++;
+            readCount++;
             return instant;
-        }
-
-        private boolean isCalledFromHandler3() {
-            // Time only needs to advance when our correct handler asks for the time.
-            for (final StackTraceElement ste : Thread.currentThread().getStackTrace()) {
-                if (ste.getClassName().endsWith("DataFormatV3")) {
-                    return true;
-                }
-            }
-            return false;
         }
 
         @Override
