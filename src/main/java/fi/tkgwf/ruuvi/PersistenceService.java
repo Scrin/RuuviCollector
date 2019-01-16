@@ -11,12 +11,12 @@ class PersistenceService implements AutoCloseable {
     private final LimitingStrategy limitingStrategy;
 
     PersistenceService() {
-        this(Config.getDBConnection());
+        this(Config.getDBConnection(), new DiscardUntilEnoughTimeHasElapsedStrategy());
     }
 
-    PersistenceService(final DBConnection db) {
+    PersistenceService(final DBConnection db, final LimitingStrategy strategy) {
         this.db = db;
-        this.limitingStrategy = new DiscardUntilEnoughTimeHasElapsedStrategy();
+        this.limitingStrategy = strategy;
     }
 
     @Override
