@@ -3,17 +3,12 @@ package fi.tkgwf.ruuvi;
 import fi.tkgwf.ruuvi.bean.RuuviMeasurement;
 import fi.tkgwf.ruuvi.config.Config;
 import fi.tkgwf.ruuvi.db.DBConnection;
-
-import java.util.HashMap;
-import java.util.Map;
+import fi.tkgwf.ruuvi.strategy.LimitingStrategy;
+import fi.tkgwf.ruuvi.strategy.impl.DiscardUntilEnoughTimeHasElapsedStrategy;
 
 class PersistenceService implements AutoCloseable {
-    /**
-     * Contains the MAC address as key, and the timestamp of last sent update as value
-     */
-    private final Map<String, Long> updatedMacs = new HashMap<>();
-    private final long updateLimit = Config.getMeasurementUpdateLimit();
     private final DBConnection db;
+    private final LimitingStrategy limitingStrategy;
 
     PersistenceService() {
         this(Config.getDBConnection());
@@ -21,6 +16,7 @@ class PersistenceService implements AutoCloseable {
 
     PersistenceService(final DBConnection db) {
         this.db = db;
+        this.limitingStrategy = new DiscardUntilEnoughTimeHasElapsedStrategy();
     }
 
     @Override
@@ -29,18 +25,7 @@ class PersistenceService implements AutoCloseable {
     }
 
     void store(final RuuviMeasurement measurement) {
-        if (shouldUpdate(measurement.mac)) {
-            db.save(measurement);
-        }
+        this.limitingStrategy.apply(measurement).ifPresent(db::save);
     }
 
-    private boolean shouldUpdate(final String mac) {
-        final Long lastUpdate = updatedMacs.get(mac);
-        final long currentTime = Config.currentTimeMillis();
-        if (lastUpdate == null || lastUpdate + updateLimit < currentTime) {
-            updatedMacs.put(mac, currentTime);
-            return true;
-        }
-        return false;
-    }
 }
