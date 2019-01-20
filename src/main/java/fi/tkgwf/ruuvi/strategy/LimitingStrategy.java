@@ -3,8 +3,10 @@ package fi.tkgwf.ruuvi.strategy;
 import fi.tkgwf.ruuvi.bean.RuuviMeasurement;
 
 import java.util.Optional;
+import java.util.function.Function;
 
-public interface LimitingStrategy {
+public interface LimitingStrategy extends Function<RuuviMeasurement, Optional<RuuviMeasurement>> {
+
     /**
      * Applies a limiting strategy to the given measurement.
      *
@@ -16,5 +18,6 @@ public interface LimitingStrategy {
      * the same object that was given in as a parameter: it might be the strategy to, say, calculate
      * some averages or maximum values of some of the previous measurements instead.
      */
+    @Override
     Optional<RuuviMeasurement> apply(RuuviMeasurement measurement);
 }
