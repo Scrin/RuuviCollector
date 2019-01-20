@@ -4,6 +4,11 @@ import fi.tkgwf.ruuvi.db.DBConnection;
 import fi.tkgwf.ruuvi.db.DummyDBConnection;
 import fi.tkgwf.ruuvi.db.InfluxDBConnection;
 import fi.tkgwf.ruuvi.db.LegacyInfluxDBConnection;
+import fi.tkgwf.ruuvi.strategy.LimitingStrategy;
+import fi.tkgwf.ruuvi.strategy.impl.DiscardUntilEnoughTimeHasElapsedStrategy;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -18,8 +23,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Predicate;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
 
 public abstract class Config {
 
@@ -279,5 +282,9 @@ public abstract class Config {
 
     public static long currentTimeMillis() {
         return clock.millis();
+    }
+
+    public static LimitingStrategy getLimitingStrategy() {
+        return new DiscardUntilEnoughTimeHasElapsedStrategy();
     }
 }
