@@ -6,18 +6,13 @@ import fi.tkgwf.ruuvi.db.DBConnection;
 import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
-import java.io.Serializable;
 import java.io.StringReader;
-import java.lang.reflect.Field;
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 
 import static fi.tkgwf.ruuvi.TestFixture.RSSI_BYTE;
-import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -64,14 +59,7 @@ class MainTest {
     }
 
     private void setClockToMilliseconds(final Long... millis) {
-        try {
-            final Field clock = Config.class.getDeclaredField("clock");
-            clock.setAccessible(true);
-            clock.set(null, new FixedInstantsClock(Arrays.stream(millis)
-                .map(Instant::ofEpochMilli).collect(toList()), ZoneId.of("UTC")));
-        } catch (final Exception e) {
-            throw new RuntimeException(e);
-        }
+        TestFixture.setClockToMilliseconds(new FixedInstantsProvider(Arrays.asList(millis)));
     }
 
 
@@ -101,48 +89,21 @@ class MainTest {
 
 
     /**
-     * A clock whose readings can be pre-programmed.
+     * A timestamp supplier whose readings can be pre-programmed.
      */
-    static final class FixedInstantsClock extends Clock implements Serializable {
-        private final List<Instant> instants;
-        private final ZoneId zone;
+    static final class FixedInstantsProvider implements Supplier<Long> {
+        private final List<Long> instants;
         private int readCount = 0;
 
-        FixedInstantsClock(List<Instant> fixedInstants, ZoneId zone) {
+        FixedInstantsProvider(List<Long> fixedInstants) {
             this.instants = fixedInstants;
-            this.zone = zone;
         }
 
         @Override
-        public ZoneId getZone() {
-            return zone;
-        }
-
-        @Override
-        public Clock withZone(ZoneId zone) {
-            if (zone.equals(this.zone)) {
-                return this;
-            }
-            return new FixedInstantsClock(instants, zone);
-        }
-
-        @Override
-        public long millis() {
-            final long millis = instants.get(readCount).toEpochMilli();
+        public Long get() {
+            final long millis = instants.get(readCount);
             readCount++;
             return millis;
-        }
-
-        @Override
-        public Instant instant() {
-            final Instant instant = instants.get(readCount);
-            readCount++;
-            return instant;
-        }
-
-        @Override
-        public String toString() {
-            return "CustomClock[" + instants + "," + zone + "]";
         }
     }
 }

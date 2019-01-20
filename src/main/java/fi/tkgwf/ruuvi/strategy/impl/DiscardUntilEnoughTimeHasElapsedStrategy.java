@@ -30,7 +30,7 @@ public class DiscardUntilEnoughTimeHasElapsedStrategy implements LimitingStrateg
 
     private boolean shouldUpdate(final String mac) {
         final Long lastUpdate = updatedMacs.get(mac);
-        final long currentTime = Config.currentTimeMillis();
+        final long currentTime = Config.getTimestampProvider().get();
         if (lastUpdate == null || lastUpdate + updateLimit < currentTime) {
             updatedMacs.put(mac, currentTime);
             return true;

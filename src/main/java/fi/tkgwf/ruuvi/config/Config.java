@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 public abstract class Config {
 
@@ -48,8 +49,8 @@ public abstract class Config {
     private static final Map<String, String> TAG_NAMES = new HashMap<>();
     private static String[] scanCommand = {"hcitool", "lescan", "--duplicates", "--passive"};
     private static String[] dumpCommand = {"hcidump", "--raw"};
-    private static Clock clock = Clock.systemUTC();
     private static DBConnection customDBConnection = null;
+    private static Supplier<Long> timestampProvider = System::currentTimeMillis;
 
     static {
         readConfig();
@@ -280,8 +281,8 @@ public abstract class Config {
         return TAG_NAMES.get(mac);
     }
 
-    public static long currentTimeMillis() {
-        return clock.millis();
+    public static Supplier<Long> getTimestampProvider() {
+        return timestampProvider;
     }
 
     public static LimitingStrategy getLimitingStrategy() {

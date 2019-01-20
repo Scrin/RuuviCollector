@@ -3,15 +3,9 @@ package fi.tkgwf.ruuvi.strategy.impl;
 import fi.tkgwf.ruuvi.TestFixture;
 import fi.tkgwf.ruuvi.bean.HCIData;
 import fi.tkgwf.ruuvi.bean.RuuviMeasurement;
-import fi.tkgwf.ruuvi.config.Config;
 import fi.tkgwf.ruuvi.handler.impl.DataFormatV3;
 import fi.tkgwf.ruuvi.utils.HCIParser;
 import org.junit.jupiter.api.Test;
-
-import java.lang.reflect.Field;
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneId;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -52,12 +46,6 @@ class DiscardUntilEnoughTimeHasElapsedStrategyTest {
     }
 
     private void setClockToMilliseconds(final long millis) {
-        try {
-            final Field clock = Config.class.getDeclaredField("clock");
-            clock.setAccessible(true);
-            clock.set(null, Clock.fixed(Instant.ofEpochMilli(millis), ZoneId.of("UTC")));
-        } catch (final Exception e) {
-            throw new RuntimeException(e);
-        }
+        TestFixture.setClockToMilliseconds(() -> millis);
     }
 }
