@@ -13,7 +13,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.time.Clock;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -49,7 +48,7 @@ public abstract class Config {
     private static final Map<String, String> TAG_NAMES = new HashMap<>();
     private static String[] scanCommand = {"hcitool", "lescan", "--duplicates", "--passive"};
     private static String[] dumpCommand = {"hcidump", "--raw"};
-    private static DBConnection customDBConnection = null;
+    private static DBConnection dbConnection = null;
     private static Supplier<Long> timestampProvider = System::currentTimeMillis;
 
     static {
@@ -197,24 +196,28 @@ public abstract class Config {
     }
 
     public static DBConnection getDBConnection() {
+        if (dbConnection != null) {
+            return dbConnection;
+        }
         switch (storageMethod) {
             case "influxdb":
-                return new InfluxDBConnection();
+                dbConnection = new InfluxDBConnection();
+                break;
             case "influxdb_legacy":
-                return new LegacyInfluxDBConnection();
+                dbConnection = new LegacyInfluxDBConnection();
+                break;
             case "dummy":
-                return new DummyDBConnection();
+                dbConnection = new DummyDBConnection();
+                break;
             default:
                 try {
-                    LOG.info("Trying to use custom DB connection class: " + storageMethod);
-                    if (customDBConnection == null) {
-                        customDBConnection = (DBConnection) Class.forName(storageMethod).newInstance();
-                    }
-                    return customDBConnection;
+                    LOG.info("Trying to use custom DB dbConnection class: " + storageMethod);
+                    dbConnection = (DBConnection) Class.forName(storageMethod).newInstance();
                 } catch (final Exception e) {
                     throw new IllegalArgumentException("Invalid storage method: " + storageMethod, e);
                 }
         }
+        return dbConnection;
     }
 
     public static String getStorageValues() {
