@@ -29,6 +29,12 @@ class ConfigTest {
     }
 
     @Test
+    void testOverriddenDoubleValues() {
+        assertEquals(Double.valueOf(0.666d), Config.getDefaultWithMotionSensitivityStrategyLowerBound());
+        assertEquals(Double.valueOf(1.42d), Config.getDefaultWithMotionSensitivityStrategyUpperBound());
+    }
+
+    @Test
     void testOverriddenMacFilterList() {
         assertFalse(Config.isAllowedMAC("ABCDEF012345"));
         assertFalse(Config.isAllowedMAC("F1E2D3C4B5A6"));

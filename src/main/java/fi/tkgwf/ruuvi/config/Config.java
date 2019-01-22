@@ -5,6 +5,7 @@ import fi.tkgwf.ruuvi.db.DummyDBConnection;
 import fi.tkgwf.ruuvi.db.InfluxDBConnection;
 import fi.tkgwf.ruuvi.db.LegacyInfluxDBConnection;
 import fi.tkgwf.ruuvi.strategy.LimitingStrategy;
+import fi.tkgwf.ruuvi.strategy.impl.DefaultDiscardingWithMotionSensitivityStrategy;
 import fi.tkgwf.ruuvi.strategy.impl.DiscardUntilEnoughTimeHasElapsedStrategy;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -50,6 +51,9 @@ public abstract class Config {
     private static String[] dumpCommand = {"hcidump", "--raw"};
     private static DBConnection dbConnection = null;
     private static Supplier<Long> timestampProvider = System::currentTimeMillis;
+    private static LimitingStrategy limitingStrategy = new DiscardUntilEnoughTimeHasElapsedStrategy();
+    private static Double defaultWithMotionSensitivityStrategyLowerBound = 0.92d;
+    private static Double defaultWithMotionSensitivityStrategyUpperBound = 1.06d;
 
     static {
         readConfig();
@@ -140,6 +144,21 @@ public abstract class Config {
                             } catch (NumberFormatException ex) {
                                 LOG.warn("Malformed number format for influxBatchMaxTime: '" + value + '\'');
                             }
+                            break;
+                        case "limitingStrategy":
+                            switch (value) {
+                                case "default":
+                                    limitingStrategy = new DiscardUntilEnoughTimeHasElapsedStrategy();
+                                    break;
+                                case "defaultWithMotionSensitivity":
+                                    limitingStrategy = new DefaultDiscardingWithMotionSensitivityStrategy();
+                            }
+                            break;
+                        case "limitingStrategy.defaultWithMotionSensitivity.lowerBound":
+                            defaultWithMotionSensitivityStrategyLowerBound = Double.parseDouble(value);
+                            break;
+                        case "limitingStrategy.defaultWithMotionSensitivity.upperBound":
+                            defaultWithMotionSensitivityStrategyUpperBound = Double.parseDouble(value);
                             break;
                     }
                 }
@@ -289,6 +308,14 @@ public abstract class Config {
     }
 
     public static LimitingStrategy getLimitingStrategy() {
-        return new DiscardUntilEnoughTimeHasElapsedStrategy();
+        return limitingStrategy;
+    }
+
+    public static Double getDefaultWithMotionSensitivityStrategyLowerBound() {
+        return defaultWithMotionSensitivityStrategyLowerBound;
+    }
+
+    public static Double getDefaultWithMotionSensitivityStrategyUpperBound() {
+        return defaultWithMotionSensitivityStrategyUpperBound;
     }
 }

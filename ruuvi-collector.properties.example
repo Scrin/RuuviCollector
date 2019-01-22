@@ -20,6 +20,17 @@
 # For example 9900 means post at most one measurement type per tag per 9.9 seconds
 #measurementUpdateLimit=9900
 
+# Limiting strategy, currently valid values: "default" and "defaultWithMotionSensitivity".
+# The default in both is to discard packets and only to save a packet every [measurementUpdateLimit] seconds
+# (see above). Additionally, the "defaultWithMotionSensitivity" strategy saves packets that exhibit high total
+# acceleration. The exact thresholds are configurable using the limitingStrategy.defaultWithMotionSensitivity.lowerBound
+# and limitingStrategy.defaultWithMotionSensitivity.upperBound properties.
+#limitingStrategy=default
+
+# Note, the bounds below have no effect if "default" has been set as the limiting strategy above:
+#limitingStrategy.defaultWithMotionSensitivity.lowerBound=0.92
+#limitingStrategy.defaultWithMotionSensitivity.upperBound=1.06
+
 # Filtering for sources based on the source MAC address (blacklist or whitelist)
 # Valid values "none", "blacklist" and "whitelist". 
 # none      = Allows any source to be stored (default)

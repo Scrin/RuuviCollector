@@ -5,12 +5,19 @@ import fi.tkgwf.ruuvi.bean.HCIData;
 import fi.tkgwf.ruuvi.bean.RuuviMeasurement;
 import fi.tkgwf.ruuvi.handler.impl.DataFormatV3;
 import fi.tkgwf.ruuvi.utils.HCIParser;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DiscardUntilEnoughTimeHasElapsedStrategyTest {
+
+    @AfterAll
+    static void restoreClock() {
+        TestFixture.setClockToMilliseconds(System::currentTimeMillis);
+    }
+
     @Test
     void testDiscardingOfMeasurementsUntilEnoughTimeHasPassedSincePreviousMeasurement() {
         final HCIData hciData = new HCIParser().readLine(TestFixture.getDataFormat3Message());

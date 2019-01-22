@@ -3,6 +3,7 @@ package fi.tkgwf.ruuvi;
 import fi.tkgwf.ruuvi.bean.RuuviMeasurement;
 import fi.tkgwf.ruuvi.config.Config;
 import fi.tkgwf.ruuvi.db.DBConnection;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
@@ -17,6 +18,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MainTest {
+
+    @AfterAll
+    static void restoreClock() {
+        TestFixture.setClockToMilliseconds(System::currentTimeMillis);
+    }
 
     @Test
     void integrationTest() {
