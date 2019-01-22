@@ -196,28 +196,28 @@ public abstract class Config {
     }
 
     public static DBConnection getDBConnection() {
-        if (dbConnection != null) {
-            return dbConnection;
+        if (dbConnection == null) {
+            dbConnection = createDBConnection();
         }
+        return dbConnection;
+    }
+
+    private static DBConnection createDBConnection() {
         switch (storageMethod) {
             case "influxdb":
-                dbConnection = new InfluxDBConnection();
-                break;
+                return new InfluxDBConnection();
             case "influxdb_legacy":
-                dbConnection = new LegacyInfluxDBConnection();
-                break;
+                return new LegacyInfluxDBConnection();
             case "dummy":
-                dbConnection = new DummyDBConnection();
-                break;
+                return new DummyDBConnection();
             default:
                 try {
                     LOG.info("Trying to use custom DB dbConnection class: " + storageMethod);
-                    dbConnection = (DBConnection) Class.forName(storageMethod).newInstance();
+                    return (DBConnection) Class.forName(storageMethod).newInstance();
                 } catch (final Exception e) {
                     throw new IllegalArgumentException("Invalid storage method: " + storageMethod, e);
                 }
         }
-        return dbConnection;
     }
 
     public static String getStorageValues() {
