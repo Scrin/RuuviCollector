@@ -1,5 +1,7 @@
 package fi.tkgwf.ruuvi.config;
 
+import fi.tkgwf.ruuvi.strategy.impl.DefaultDiscardingWithMotionSensitivityStrategy;
+import fi.tkgwf.ruuvi.strategy.impl.DiscardUntilEnoughTimeHasElapsedStrategy;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -64,5 +66,13 @@ class ConfigTest {
     @Test
     void testNameThatCanNotBeFound() {
         assertNull(Config.getTagName("123456789012"));
+    }
+
+    @Test
+    void testLimitingStrategyPerMac() {
+        assertTrue(Config.getLimitingStrategy("ABCDEF012345") instanceof DiscardUntilEnoughTimeHasElapsedStrategy);
+        assertTrue(Config.getLimitingStrategy("F1E2D3C4B5A6") instanceof DefaultDiscardingWithMotionSensitivityStrategy);
+
+        assertTrue(Config.getLimitingStrategy("unknown should get default") instanceof DiscardUntilEnoughTimeHasElapsedStrategy);
     }
 }

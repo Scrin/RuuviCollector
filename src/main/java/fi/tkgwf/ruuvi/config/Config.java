@@ -8,6 +8,7 @@ import fi.tkgwf.ruuvi.strategy.LimitingStrategy;
 import fi.tkgwf.ruuvi.strategy.impl.DefaultDiscardingWithMotionSensitivityStrategy;
 import fi.tkgwf.ruuvi.strategy.impl.DiscardUntilEnoughTimeHasElapsedStrategy;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -27,7 +28,9 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 
 public abstract class Config {
@@ -62,6 +65,7 @@ public abstract class Config {
     private static LimitingStrategy limitingStrategy = new DiscardUntilEnoughTimeHasElapsedStrategy();
     private static Double defaultWithMotionSensitivityStrategyLowerBound = 0.92d;
     private static Double defaultWithMotionSensitivityStrategyUpperBound = 1.06d;
+    private static Map<String, TagProperties> tagProperties = new HashMap<>();
 
     static {
         readConfig();
@@ -95,10 +99,33 @@ public abstract class Config {
                 limitingStrategy = parseLimitingStrategy(props);
                 defaultWithMotionSensitivityStrategyLowerBound = parseDouble(props, "limitingStrategy.defaultWithMotionSensitivity.lowerBound", defaultWithMotionSensitivityStrategyLowerBound);
                 defaultWithMotionSensitivityStrategyUpperBound = parseDouble(props, "limitingStrategy.defaultWithMotionSensitivity.upperBound", defaultWithMotionSensitivityStrategyUpperBound);
+                tagProperties = parseTagProperties(props);
+
             }
         } catch (URISyntaxException | IOException ex) {
             LOG.warn("Failed to read configuration, using default values...", ex);
         }
+    }
+
+    private static Map<String, TagProperties> parseTagProperties(final Properties props) {
+        final Map<String, Map<String, String>> tagProps = props.entrySet().stream()
+            .map(e -> Pair.of(String.valueOf(e.getKey()), String.valueOf(e.getValue())))
+            .filter(p -> p.getLeft().startsWith("tag."))
+            .collect(Collectors.groupingBy(extractMacAddressFromTagPropertyName(),
+                toMap(extractKeyFromTagPropertyName(), Pair::getRight)));
+        return tagProps.entrySet().stream().map(e -> {
+            final TagProperties.Builder builder = TagProperties.builder(e.getKey());
+            e.getValue().forEach(builder::add);
+            return builder.build();
+        }).collect(Collectors.toMap(TagProperties::getMac, t -> t));
+    }
+
+    private static Function<Pair<String, String>, String> extractKeyFromTagPropertyName() {
+        return p -> p.getLeft().substring(17, p.getLeft().length());
+    }
+
+    private static Function<Pair<String, String>, String> extractMacAddressFromTagPropertyName() {
+        return p -> p.getLeft().substring(4, 16);
     }
 
     private static LimitingStrategy parseLimitingStrategy(final Properties props) {
@@ -300,6 +327,10 @@ public abstract class Config {
 
     public static LimitingStrategy getLimitingStrategy() {
         return limitingStrategy;
+    }
+
+    public static LimitingStrategy getLimitingStrategy(String mac) {
+        return tagProperties.getOrDefault(mac, TagProperties.defaultValues()).getLimitingStrategy();
     }
 
     public static Double getDefaultWithMotionSensitivityStrategyLowerBound() {
