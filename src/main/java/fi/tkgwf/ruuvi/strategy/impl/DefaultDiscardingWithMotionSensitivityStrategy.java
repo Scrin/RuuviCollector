@@ -21,8 +21,10 @@ public class DefaultDiscardingWithMotionSensitivityStrategy implements LimitingS
 
     @Override
     public Optional<RuuviMeasurement> apply(final RuuviMeasurement measurement) {
-        if (measurement.accelerationTotal < Config.getDefaultWithMotionSensitivityStrategyLowerBound()
-            || measurement.accelerationTotal > Config.getDefaultWithMotionSensitivityStrategyUpperBound()) {
+        final Double totalAcceleration = measurement.accelerationTotal;
+        if (totalAcceleration != null
+            && (totalAcceleration < Config.getDefaultWithMotionSensitivityStrategyLowerBound()
+            || totalAcceleration > Config.getDefaultWithMotionSensitivityStrategyUpperBound())) {
             return Optional.of(measurement);
         }
         return defaultStrategy.apply(measurement);
