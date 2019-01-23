@@ -2,7 +2,6 @@ package fi.tkgwf.ruuvi.config;
 
 import fi.tkgwf.ruuvi.strategy.LimitingStrategy;
 import fi.tkgwf.ruuvi.strategy.impl.DefaultDiscardingWithMotionSensitivityStrategy;
-import fi.tkgwf.ruuvi.strategy.impl.DiscardUntilEnoughTimeHasElapsedStrategy;
 
 import java.util.Optional;
 
@@ -13,7 +12,7 @@ public class TagProperties {
     private TagProperties(final String mac, final LimitingStrategy limitingStrategy) {
         this.mac = mac;
         this.limitingStrategy = Optional.ofNullable(limitingStrategy)
-            .orElse(new DiscardUntilEnoughTimeHasElapsedStrategy());
+            .orElse(Config.getLimitingStrategy());
     }
 
     public static TagProperties defaultValues() {
