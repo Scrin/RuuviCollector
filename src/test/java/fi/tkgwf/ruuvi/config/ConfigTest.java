@@ -9,8 +9,23 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ConfigTest {
     @Test
-    void testDefaultValue() {
+    void testDefaultStringValue() {
         assertEquals("ruuvi", Config.getInfluxUser());
+    }
+
+    @Test
+    void testDefaultBooleanValue() {
+        assertEquals(true, Config.isInfluxBatch());
+    }
+
+    @Test
+    void testDefaultIntegerValue() {
+        assertEquals(100, Config.getInfluxBatchMaxTimeMs());
+    }
+
+    @Test
+    void testDefaultLongValue() {
+        assertEquals(9900, Config.getMeasurementUpdateLimit());
     }
 
     @Test

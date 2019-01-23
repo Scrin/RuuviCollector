@@ -15,6 +15,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,14 +24,20 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+
+import static java.util.stream.Collectors.toSet;
 
 public abstract class Config {
 
     private static final Logger LOG = Logger.getLogger(Config.class);
     private static final String RUUVI_COLLECTOR_PROPERTIES = "ruuvi-collector.properties";
     private static final String RUUVI_NAMES_PROPERTIES = "ruuvi-names.properties";
+
+    private static final String DEFAULT_SCAN_COMMAND = "hcitool lescan --duplicates --passive";
+    private static final String DEFAULT_DUMP_COMMAND = "hcidump --raw";
 
     private static String influxUrl = "http://localhost:8086";
     private static String influxDatabase = "ruuvi";
@@ -47,8 +55,8 @@ public abstract class Config {
     private static Predicate<String> filterMode = (s) -> true;
     private static final Set<String> FILTER_MACS = new HashSet<>();
     private static final Map<String, String> TAG_NAMES = new HashMap<>();
-    private static String[] scanCommand = {"hcitool", "lescan", "--duplicates", "--passive"};
-    private static String[] dumpCommand = {"hcidump", "--raw"};
+    private static String[] scanCommand = DEFAULT_SCAN_COMMAND.split(" ");
+    private static String[] dumpCommand = DEFAULT_DUMP_COMMAND.split(" ");
     private static DBConnection dbConnection = null;
     private static Supplier<Long> timestampProvider = System::currentTimeMillis;
     private static LimitingStrategy limitingStrategy = new DiscardUntilEnoughTimeHasElapsedStrategy();
@@ -67,105 +75,88 @@ public abstract class Config {
                 LOG.debug("Config: " + configFile);
                 Properties props = new Properties();
                 props.load(new FileInputStream(configFile));
-                Enumeration<?> e = props.propertyNames();
-                while (e.hasMoreElements()) {
-                    String key = (String) e.nextElement();
-                    String value = props.getProperty(key);
-                    switch (key) {
-                        case "influxUrl":
-                            influxUrl = value;
-                            break;
-                        case "influxDatabase":
-                            influxDatabase = value;
-                            break;
-                        case "influxMeasurement":
-                            influxMeasurement = value;
-                            break;
-                        case "influxUser":
-                            influxUser = value;
-                            break;
-                        case "influxPassword":
-                            influxPassword = value;
-                            break;
-                        case "measurementUpdateLimit":
-                            try {
-                                measurementUpdateLimit = Long.parseLong(value);
-                            } catch (NumberFormatException ex) {
-                                LOG.warn("Malformed number format for influxUpdateLimit: '" + value + '\'');
-                            }
-                            break;
-                        case "storage.method":
-                            storageMethod = value;
-                            break;
-                        case "storage.values":
-                            storageValues = value;
-                            break;
-                        case "filter.mode":
-                            switch (value) {
-                                case "blacklist":
-                                    filterMode = (s) -> !FILTER_MACS.contains(s);
-                                    break;
-                                case "whitelist":
-                                    filterMode = FILTER_MACS::contains;
-                            }
-                            break;
-                        case "filter.macs":
-                            Arrays.stream(value.split(","))
-                                    .map(String::trim)
-                                    .filter(s -> s.length() == 12)
-                                    .map(String::toUpperCase)
-                                    .forEach(FILTER_MACS::add);
-                            break;
-                        case "command.scan":
-                            scanCommand = value.split(" ");
-                            break;
-                        case "command.dump":
-                            dumpCommand = value.split(" ");
-                            break;
-                        case "influxRetentionPolicy":
-                            influxRetentionPolicy = value;
-                            break;
-                        case "influxGzip":
-                            influxGzip = Boolean.parseBoolean(value);
-                            break;
-                        case "influxBatch":
-                            influxBatch = Boolean.parseBoolean(value);
-                            break;
-                        case "influxBatchMaxSize":
-                            try {
-                                influxBatchMaxSize = Integer.parseInt(value);
-                            } catch (NumberFormatException ex) {
-                                LOG.warn("Malformed number format for influxBatchMaxSize: '" + value + '\'');
-                            }
-                            break;
-                        case "influxBatchMaxTime":
-                            try {
-                                influxBatchMaxTimeMs = Integer.parseInt(value);
-                            } catch (NumberFormatException ex) {
-                                LOG.warn("Malformed number format for influxBatchMaxTime: '" + value + '\'');
-                            }
-                            break;
-                        case "limitingStrategy":
-                            switch (value) {
-                                case "default":
-                                    limitingStrategy = new DiscardUntilEnoughTimeHasElapsedStrategy();
-                                    break;
-                                case "defaultWithMotionSensitivity":
-                                    limitingStrategy = new DefaultDiscardingWithMotionSensitivityStrategy();
-                            }
-                            break;
-                        case "limitingStrategy.defaultWithMotionSensitivity.lowerBound":
-                            defaultWithMotionSensitivityStrategyLowerBound = Double.parseDouble(value);
-                            break;
-                        case "limitingStrategy.defaultWithMotionSensitivity.upperBound":
-                            defaultWithMotionSensitivityStrategyUpperBound = Double.parseDouble(value);
-                            break;
-                    }
-                }
+                influxUrl = props.getProperty("influxUrl", influxUrl);
+                influxDatabase = props.getProperty("influxDatabase", influxDatabase);
+                influxMeasurement = props.getProperty("influxMeasurement", influxMeasurement);
+                influxUser = props.getProperty("influxUser", influxUser);
+                influxPassword = props.getProperty("influxPassword", influxPassword);
+                measurementUpdateLimit = parseLong(props, "measurementUpdateLimit", measurementUpdateLimit);
+                storageMethod = props.getProperty("storage.method", storageMethod);
+                storageValues = props.getProperty("storage.values", storageValues);
+                filterMode = parseFilterMode(props);
+                FILTER_MACS.addAll(parseFilterMacs(props));
+                scanCommand = props.getProperty("command.scan", DEFAULT_SCAN_COMMAND).split(" ");
+                dumpCommand = props.getProperty("command.dump", DEFAULT_DUMP_COMMAND).split(" ");
+                influxRetentionPolicy = props.getProperty("influxRetentionPolicy", influxRetentionPolicy);
+                influxGzip = parseBoolean(props, "influxGzip", influxGzip);
+                influxBatch = parseBoolean(props, "influxBatch", influxBatch);
+                influxBatchMaxSize = parseInteger(props, "influxBatchMaxSize", influxBatchMaxSize);
+                influxBatchMaxTimeMs = parseInteger(props, "influxBatchMaxTime", influxBatchMaxTimeMs);
+                limitingStrategy = parseLimitingStrategy(props);
+                defaultWithMotionSensitivityStrategyLowerBound = parseDouble(props, "limitingStrategy.defaultWithMotionSensitivity.lowerBound", defaultWithMotionSensitivityStrategyLowerBound);
+                defaultWithMotionSensitivityStrategyUpperBound = parseDouble(props, "limitingStrategy.defaultWithMotionSensitivity.upperBound", defaultWithMotionSensitivityStrategyUpperBound);
             }
         } catch (URISyntaxException | IOException ex) {
             LOG.warn("Failed to read configuration, using default values...", ex);
         }
+    }
+
+    private static LimitingStrategy parseLimitingStrategy(final Properties props) {
+        final String strategy = props.getProperty("limitingStrategy");
+        if (strategy != null) {
+            if ("defaultWithMotionSensitivity".equals(strategy)) {
+                return new DefaultDiscardingWithMotionSensitivityStrategy();
+            }
+        }
+        return new DiscardUntilEnoughTimeHasElapsedStrategy();
+    }
+
+    private static Collection<? extends String> parseFilterMacs(final Properties props) {
+        return Optional.ofNullable(props.getProperty("filter.macs"))
+            .map(value -> Arrays.stream(value.split(","))
+                .map(String::trim)
+                .filter(s -> s.length() == 12)
+                .map(String::toUpperCase).collect(toSet()))
+            .orElse(Collections.emptySet());
+    }
+
+    private static Predicate<String> parseFilterMode(final Properties props) {
+        final String filter = props.getProperty("filter.mode");
+        if (filter != null) {
+            switch (filter) {
+                case "blacklist":
+                    return (s) -> !FILTER_MACS.contains(s);
+                case "whitelist":
+                    return FILTER_MACS::contains;
+            }
+        }
+        return filterMode;
+    }
+
+    private static long parseLong(final Properties props, final String key, final long defaultValue) {
+        return parseNumber(props, key, defaultValue, Long::parseLong);
+    }
+
+    private static int parseInteger(final Properties props, final String key, final int defaultValue) {
+        return parseNumber(props, key, defaultValue, Integer::parseInt);
+    }
+
+    private static double parseDouble(final Properties props, final String key, final double defaultValue) {
+        return parseNumber(props, key, defaultValue, Double::parseDouble);
+    }
+
+    private static <N extends Number> N parseNumber(final Properties props, final String key, final N defaultValue, final Function<String, N> parser) {
+        final String value = props.getProperty(key);
+        try {
+            return Optional.ofNullable(value).map(parser).orElse(defaultValue);
+        } catch (final NumberFormatException ex) {
+            LOG.warn("Malformed number format for " + key + ": '" + value + '\'');
+            return defaultValue;
+        }
+    }
+
+    private static boolean parseBoolean(final Properties props, final String key, final boolean defaultValue) {
+        return Optional.ofNullable(props.getProperty(key)).map(Boolean::parseBoolean).orElse(defaultValue);
     }
 
     private static File findConfigFiles(final String propertiesFileName) throws URISyntaxException {
