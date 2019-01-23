@@ -21,7 +21,7 @@
 #measurementUpdateLimit=9900
 
 # Limiting strategy, currently valid values: "default" and "defaultWithMotionSensitivity".
-# The default in both is to discard packets and only to save a packet every [measurementUpdateLimit] seconds
+# The default in both is to discard packets and only to save a packet every [measurementUpdateLimit] milliseconds
 # (see above). Additionally, the "defaultWithMotionSensitivity" strategy saves packets that exhibit high total
 # acceleration. The exact thresholds are configurable using the limitingStrategy.defaultWithMotionSensitivity.lowerBound
 # and limitingStrategy.defaultWithMotionSensitivity.upperBound properties.
