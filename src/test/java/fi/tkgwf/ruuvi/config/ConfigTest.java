@@ -47,7 +47,7 @@ class ConfigTest {
 
     @Test
     void testOverriddenDoubleValues() {
-        assertEquals(Double.valueOf(6d), Config.getDefaultWithMotionSensitivityStrategyThresholdPercentage());
+        assertEquals(Double.valueOf(0.06d), Config.getDefaultWithMotionSensitivityStrategyThreshold());
     }
 
     @Test

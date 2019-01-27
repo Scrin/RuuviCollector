@@ -63,7 +63,7 @@ public abstract class Config {
     private static DBConnection dbConnection = null;
     private static Supplier<Long> timestampProvider = System::currentTimeMillis;
     private static LimitingStrategy limitingStrategy = new DiscardUntilEnoughTimeHasElapsedStrategy();
-    private static Double defaultWithMotionSensitivityStrategyThresholdPercentage = 5.00;
+    private static Double defaultWithMotionSensitivityStrategyThreshold = 50.00;
     private static int defaultWithMotionSensitivityStrategyNumberOfPreviousMeasurementsToKeep = 3;
     private static Map<String, TagProperties> tagProperties = new HashMap<>();
 
@@ -97,7 +97,7 @@ public abstract class Config {
                 influxBatchMaxSize = parseInteger(props, "influxBatchMaxSize", influxBatchMaxSize);
                 influxBatchMaxTimeMs = parseInteger(props, "influxBatchMaxTime", influxBatchMaxTimeMs);
                 limitingStrategy = parseLimitingStrategy(props);
-                defaultWithMotionSensitivityStrategyThresholdPercentage = parseDouble(props, "limitingStrategy.defaultWithMotionSensitivity.thresholdPercentage", defaultWithMotionSensitivityStrategyThresholdPercentage);
+                defaultWithMotionSensitivityStrategyThreshold = parseDouble(props, "limitingStrategy.defaultWithMotionSensitivity.threshold", defaultWithMotionSensitivityStrategyThreshold);
                 defaultWithMotionSensitivityStrategyNumberOfPreviousMeasurementsToKeep = parseInteger(props, "limitingStrategy.defaultWithMotionSensitivity.numberOfMeasurementsToKeep", defaultWithMotionSensitivityStrategyNumberOfPreviousMeasurementsToKeep);
                 tagProperties = parseTagProperties(props);
 
@@ -333,8 +333,8 @@ public abstract class Config {
         return tagProperties.getOrDefault(mac, TagProperties.defaultValues()).getLimitingStrategy();
     }
 
-    public static Double getDefaultWithMotionSensitivityStrategyThresholdPercentage() {
-        return defaultWithMotionSensitivityStrategyThresholdPercentage;
+    public static Double getDefaultWithMotionSensitivityStrategyThreshold() {
+        return defaultWithMotionSensitivityStrategyThreshold;
     }
 
     public static int getDefaultWithMotionSensitivityStrategyNumberOfPreviousMeasurementsToKeep() {

@@ -16,8 +16,8 @@ import java.util.Optional;
  * takes place -- in that case the measurement is always saved.
  * </p><p>
  * The time limit is defined as {@link Config#getMeasurementUpdateLimit()}.
- * The acceleration bounds are defined as a percentage value compared to the previous measurement
- * with {@link Config#getDefaultWithMotionSensitivityStrategyThresholdPercentage()}.
+ * The acceleration bounds are defined as values compared to the previous measurement
+ * with {@link Config#getDefaultWithMotionSensitivityStrategyThreshold()}.
  * </p><p>
  * The limit is applied separately to all the different devices sending data, i.e. per MAC address.
  * </p>
@@ -25,7 +25,7 @@ import java.util.Optional;
 public class DefaultDiscardingWithMotionSensitivityStrategy implements LimitingStrategy {
     private final DiscardUntilEnoughTimeHasElapsedStrategy defaultStrategy = new DiscardUntilEnoughTimeHasElapsedStrategy();
 
-    private final Double threshold = Config.getDefaultWithMotionSensitivityStrategyThresholdPercentage();
+    private final Double threshold = Config.getDefaultWithMotionSensitivityStrategyThreshold();
     private final Map<String, List<RuuviMeasurement>> previousMeasurementsPerMac = new HashMap<>();
     private final Map<String, Boolean> previousOutsideOfRangePerMac = new HashMap<>();
 
@@ -63,9 +63,9 @@ public class DefaultDiscardingWithMotionSensitivityStrategy implements LimitingS
         if (current == null || previous == null) {
             return false;
         }
-        final double upperPercentage = 1 + threshold / 100;
-        final double lowerPercentage = 1 - threshold / 100;
-        return current > previous * upperPercentage || current < previous * lowerPercentage;
+        final double upperBound = previous + threshold;
+        final double lowerBound = previous - threshold;
+        return current > upperBound || current < lowerBound;
     }
 
 
