@@ -63,8 +63,8 @@ public abstract class Config {
     private static DBConnection dbConnection = null;
     private static Supplier<Long> timestampProvider = System::currentTimeMillis;
     private static LimitingStrategy limitingStrategy = new DiscardUntilEnoughTimeHasElapsedStrategy();
-    private static Double defaultWithMotionSensitivityStrategyLowerBound = 0.92d;
-    private static Double defaultWithMotionSensitivityStrategyUpperBound = 1.06d;
+    private static Double defaultWithMotionSensitivityStrategyThresholdPercentage = 5.00;
+    private static int defaultWithMotionSensitivityStrategyNumberOfPreviousMeasurementsToKeep = 3;
     private static Map<String, TagProperties> tagProperties = new HashMap<>();
 
     static {
@@ -97,8 +97,8 @@ public abstract class Config {
                 influxBatchMaxSize = parseInteger(props, "influxBatchMaxSize", influxBatchMaxSize);
                 influxBatchMaxTimeMs = parseInteger(props, "influxBatchMaxTime", influxBatchMaxTimeMs);
                 limitingStrategy = parseLimitingStrategy(props);
-                defaultWithMotionSensitivityStrategyLowerBound = parseDouble(props, "limitingStrategy.defaultWithMotionSensitivity.lowerBound", defaultWithMotionSensitivityStrategyLowerBound);
-                defaultWithMotionSensitivityStrategyUpperBound = parseDouble(props, "limitingStrategy.defaultWithMotionSensitivity.upperBound", defaultWithMotionSensitivityStrategyUpperBound);
+                defaultWithMotionSensitivityStrategyThresholdPercentage = parseDouble(props, "limitingStrategy.defaultWithMotionSensitivity.thresholdPercentage", defaultWithMotionSensitivityStrategyThresholdPercentage);
+                defaultWithMotionSensitivityStrategyNumberOfPreviousMeasurementsToKeep = parseInteger(props, "limitingStrategy.defaultWithMotionSensitivity.numberOfMeasurementsToKeep", defaultWithMotionSensitivityStrategyNumberOfPreviousMeasurementsToKeep);
                 tagProperties = parseTagProperties(props);
 
             }
@@ -333,11 +333,11 @@ public abstract class Config {
         return tagProperties.getOrDefault(mac, TagProperties.defaultValues()).getLimitingStrategy();
     }
 
-    public static Double getDefaultWithMotionSensitivityStrategyLowerBound() {
-        return defaultWithMotionSensitivityStrategyLowerBound;
+    public static Double getDefaultWithMotionSensitivityStrategyThresholdPercentage() {
+        return defaultWithMotionSensitivityStrategyThresholdPercentage;
     }
 
-    public static Double getDefaultWithMotionSensitivityStrategyUpperBound() {
-        return defaultWithMotionSensitivityStrategyUpperBound;
+    public static int getDefaultWithMotionSensitivityStrategyNumberOfPreviousMeasurementsToKeep() {
+        return defaultWithMotionSensitivityStrategyNumberOfPreviousMeasurementsToKeep;
     }
 }

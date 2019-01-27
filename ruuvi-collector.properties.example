@@ -22,14 +22,13 @@
 
 # Limiting strategy, currently valid values: "default" and "defaultWithMotionSensitivity".
 # The default in both is to discard packets and only to save a packet every [measurementUpdateLimit] milliseconds
-# (see above). Additionally, the "defaultWithMotionSensitivity" strategy saves packets that exhibit high total
-# acceleration. The exact thresholds are configurable using the limitingStrategy.defaultWithMotionSensitivity.lowerBound
-# and limitingStrategy.defaultWithMotionSensitivity.upperBound properties.
+# (see above). Additionally, the "defaultWithMotionSensitivity" strategy saves packets that exhibit sudden acceleration
+# changes. The exact threshold is configurable using the limitingStrategy.defaultWithMotionSensitivity.thresholdPercentage
+# property.
 #limitingStrategy=default
 
-# Note, the bounds below have no effect if "default" has been set as the limiting strategy above:
-#limitingStrategy.defaultWithMotionSensitivity.lowerBound=0.92
-#limitingStrategy.defaultWithMotionSensitivity.upperBound=1.06
+# Note, the value below has no effect if "default" has been set as the limiting strategy above:
+#limitingStrategy.defaultWithMotionSensitivity.thresholdPercentage=5
 
 # Filtering for sources based on the source MAC address (blacklist or whitelist)
 # Valid values "none", "blacklist" and "whitelist". 
