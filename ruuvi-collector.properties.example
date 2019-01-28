@@ -27,8 +27,9 @@
 # property.
 #limitingStrategy=default
 
-# Note, the value below has no effect if "default" has been set as the limiting strategy above:
-#limitingStrategy.defaultWithMotionSensitivity.threshold=50
+# Note, the value below has no effect if "default" has been set as the limiting strategy above.
+# Value of "1" corresponds to 1 G. The default is 0.05, i.e. 50 mG.
+#limitingStrategy.defaultWithMotionSensitivity.threshold=0.05
 
 # Filtering for sources based on the source MAC address (blacklist or whitelist)
 # Valid values "none", "blacklist" and "whitelist". 

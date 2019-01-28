@@ -63,7 +63,7 @@ public abstract class Config {
     private static DBConnection dbConnection = null;
     private static Supplier<Long> timestampProvider = System::currentTimeMillis;
     private static LimitingStrategy limitingStrategy = new DiscardUntilEnoughTimeHasElapsedStrategy();
-    private static Double defaultWithMotionSensitivityStrategyThreshold = 50.00;
+    private static Double defaultWithMotionSensitivityStrategyThreshold = 0.05;
     private static int defaultWithMotionSensitivityStrategyNumberOfPreviousMeasurementsToKeep = 3;
     private static Map<String, TagProperties> tagProperties = new HashMap<>();
 
