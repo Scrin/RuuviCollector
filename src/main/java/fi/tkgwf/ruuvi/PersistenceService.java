@@ -4,7 +4,6 @@ import fi.tkgwf.ruuvi.bean.RuuviMeasurement;
 import fi.tkgwf.ruuvi.config.Config;
 import fi.tkgwf.ruuvi.db.DBConnection;
 import fi.tkgwf.ruuvi.strategy.LimitingStrategy;
-import fi.tkgwf.ruuvi.strategy.impl.DiscardUntilEnoughTimeHasElapsedStrategy;
 
 class PersistenceService implements AutoCloseable {
     private final DBConnection db;
