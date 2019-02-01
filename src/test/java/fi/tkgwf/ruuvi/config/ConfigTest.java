@@ -4,6 +4,8 @@ import fi.tkgwf.ruuvi.strategy.impl.DefaultDiscardingWithMotionSensitivityStrate
 import fi.tkgwf.ruuvi.strategy.impl.DiscardUntilEnoughTimeHasElapsedStrategy;
 import org.junit.jupiter.api.Test;
 
+import java.util.Properties;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -73,5 +75,19 @@ class ConfigTest {
         assertTrue(Config.getLimitingStrategy("F1E2D3C4B5A6") instanceof DefaultDiscardingWithMotionSensitivityStrategy);
 
         assertTrue(Config.getLimitingStrategy("unknown should get default") instanceof DiscardUntilEnoughTimeHasElapsedStrategy);
+    }
+
+    @Test
+    void testRefreshingConfigOnTheFly() {
+        // Assert the default value:
+        assertEquals("ruuvi", Config.getInfluxUser());
+
+        // Load in a new value:
+        final Properties properties = new Properties();
+        properties.put("influxUser", "screw");
+        Config.readConfigFromProperties(properties);
+
+        // Test that it worked:
+        assertEquals("screw", Config.getInfluxUser());
     }
 }

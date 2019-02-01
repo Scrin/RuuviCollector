@@ -79,32 +79,35 @@ public abstract class Config {
                 LOG.debug("Config: " + configFile);
                 Properties props = new Properties();
                 props.load(new FileInputStream(configFile));
-                influxUrl = props.getProperty("influxUrl", influxUrl);
-                influxDatabase = props.getProperty("influxDatabase", influxDatabase);
-                influxMeasurement = props.getProperty("influxMeasurement", influxMeasurement);
-                influxUser = props.getProperty("influxUser", influxUser);
-                influxPassword = props.getProperty("influxPassword", influxPassword);
-                measurementUpdateLimit = parseLong(props, "measurementUpdateLimit", measurementUpdateLimit);
-                storageMethod = props.getProperty("storage.method", storageMethod);
-                storageValues = props.getProperty("storage.values", storageValues);
-                filterMode = parseFilterMode(props);
-                FILTER_MACS.addAll(parseFilterMacs(props));
-                scanCommand = props.getProperty("command.scan", DEFAULT_SCAN_COMMAND).split(" ");
-                dumpCommand = props.getProperty("command.dump", DEFAULT_DUMP_COMMAND).split(" ");
-                influxRetentionPolicy = props.getProperty("influxRetentionPolicy", influxRetentionPolicy);
-                influxGzip = parseBoolean(props, "influxGzip", influxGzip);
-                influxBatch = parseBoolean(props, "influxBatch", influxBatch);
-                influxBatchMaxSize = parseInteger(props, "influxBatchMaxSize", influxBatchMaxSize);
-                influxBatchMaxTimeMs = parseInteger(props, "influxBatchMaxTime", influxBatchMaxTimeMs);
-                limitingStrategy = parseLimitingStrategy(props);
-                defaultWithMotionSensitivityStrategyThreshold = parseDouble(props, "limitingStrategy.defaultWithMotionSensitivity.threshold", defaultWithMotionSensitivityStrategyThreshold);
-                defaultWithMotionSensitivityStrategyNumberOfPreviousMeasurementsToKeep = parseInteger(props, "limitingStrategy.defaultWithMotionSensitivity.numberOfMeasurementsToKeep", defaultWithMotionSensitivityStrategyNumberOfPreviousMeasurementsToKeep);
-                tagProperties = parseTagProperties(props);
-
+                readConfigFromProperties(props);
             }
         } catch (URISyntaxException | IOException ex) {
             LOG.warn("Failed to read configuration, using default values...", ex);
         }
+    }
+
+    public static void readConfigFromProperties(final Properties props) {
+        influxUrl = props.getProperty("influxUrl", influxUrl);
+        influxDatabase = props.getProperty("influxDatabase", influxDatabase);
+        influxMeasurement = props.getProperty("influxMeasurement", influxMeasurement);
+        influxUser = props.getProperty("influxUser", influxUser);
+        influxPassword = props.getProperty("influxPassword", influxPassword);
+        measurementUpdateLimit = parseLong(props, "measurementUpdateLimit", measurementUpdateLimit);
+        storageMethod = props.getProperty("storage.method", storageMethod);
+        storageValues = props.getProperty("storage.values", storageValues);
+        filterMode = parseFilterMode(props);
+        FILTER_MACS.addAll(parseFilterMacs(props));
+        scanCommand = props.getProperty("command.scan", DEFAULT_SCAN_COMMAND).split(" ");
+        dumpCommand = props.getProperty("command.dump", DEFAULT_DUMP_COMMAND).split(" ");
+        influxRetentionPolicy = props.getProperty("influxRetentionPolicy", influxRetentionPolicy);
+        influxGzip = parseBoolean(props, "influxGzip", influxGzip);
+        influxBatch = parseBoolean(props, "influxBatch", influxBatch);
+        influxBatchMaxSize = parseInteger(props, "influxBatchMaxSize", influxBatchMaxSize);
+        influxBatchMaxTimeMs = parseInteger(props, "influxBatchMaxTime", influxBatchMaxTimeMs);
+        limitingStrategy = parseLimitingStrategy(props);
+        defaultWithMotionSensitivityStrategyThreshold = parseDouble(props, "limitingStrategy.defaultWithMotionSensitivity.threshold", defaultWithMotionSensitivityStrategyThreshold);
+        defaultWithMotionSensitivityStrategyNumberOfPreviousMeasurementsToKeep = parseInteger(props, "limitingStrategy.defaultWithMotionSensitivity.numberOfMeasurementsToKeep", defaultWithMotionSensitivityStrategyNumberOfPreviousMeasurementsToKeep);
+        tagProperties = parseTagProperties(props);
     }
 
     private static Map<String, TagProperties> parseTagProperties(final Properties props) {
