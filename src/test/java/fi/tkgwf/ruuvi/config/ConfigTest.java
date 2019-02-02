@@ -74,7 +74,7 @@ class ConfigTest {
         assertTrue(Config.getLimitingStrategy("ABCDEF012345") instanceof DiscardUntilEnoughTimeHasElapsedStrategy);
         assertTrue(Config.getLimitingStrategy("F1E2D3C4B5A6") instanceof DefaultDiscardingWithMotionSensitivityStrategy);
 
-        assertTrue(Config.getLimitingStrategy("unknown should get default") instanceof DiscardUntilEnoughTimeHasElapsedStrategy);
+        assertNull(Config.getLimitingStrategy("unknown should get null"));
     }
 
     @Test

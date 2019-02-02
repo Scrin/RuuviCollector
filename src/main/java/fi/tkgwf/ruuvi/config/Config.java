@@ -42,34 +42,66 @@ public abstract class Config {
     private static final String DEFAULT_SCAN_COMMAND = "hcitool lescan --duplicates --passive";
     private static final String DEFAULT_DUMP_COMMAND = "hcidump --raw";
 
-    private static String influxUrl = "http://localhost:8086";
-    private static String influxDatabase = "ruuvi";
-    private static String influxMeasurement = "ruuvi_measurements";
-    private static String influxUser = "ruuvi";
-    private static String influxPassword = "ruuvi";
-    private static String influxRetentionPolicy = "autogen";
-    private static boolean influxGzip = true;
-    private static boolean influxBatch = true;
-    private static int influxBatchMaxSize = 2000;
-    private static int influxBatchMaxTimeMs = 100;
-    private static long measurementUpdateLimit = 9900;
-    private static String storageMethod = "influxdb";
-    private static String storageValues = "extended";
-    private static Predicate<String> filterMode = (s) -> true;
+    private static String influxUrl;
+    private static String influxDatabase;
+    private static String influxMeasurement;
+    private static String influxUser;
+    private static String influxPassword;
+    private static String influxRetentionPolicy;
+    private static boolean influxGzip;
+    private static boolean influxBatch;
+    private static int influxBatchMaxSize;
+    private static int influxBatchMaxTimeMs;
+    private static long measurementUpdateLimit;
+    private static String storageMethod;
+    private static String storageValues;
+    private static Predicate<String> filterMode;
     private static final Set<String> FILTER_MACS = new HashSet<>();
     private static final Map<String, String> TAG_NAMES = new HashMap<>();
-    private static String[] scanCommand = DEFAULT_SCAN_COMMAND.split(" ");
-    private static String[] dumpCommand = DEFAULT_DUMP_COMMAND.split(" ");
-    private static DBConnection dbConnection = null;
-    private static Supplier<Long> timestampProvider = System::currentTimeMillis;
-    private static LimitingStrategy limitingStrategy = new DiscardUntilEnoughTimeHasElapsedStrategy();
-    private static Double defaultWithMotionSensitivityStrategyThreshold = 0.05;
-    private static int defaultWithMotionSensitivityStrategyNumberOfPreviousMeasurementsToKeep = 3;
-    private static Map<String, TagProperties> tagProperties = new HashMap<>();
+    private static String[] scanCommand;
+    private static String[] dumpCommand;
+    private static DBConnection dbConnection;
+    private static Supplier<Long> timestampProvider;
+    private static LimitingStrategy limitingStrategy;
+    private static Double defaultWithMotionSensitivityStrategyThreshold;
+    private static int defaultWithMotionSensitivityStrategyNumberOfPreviousMeasurementsToKeep;
+    private static Map<String, TagProperties> tagProperties;
 
     static {
+        reload();
+    }
+
+    public static void reload() {
+        loadDefaults();
         readConfig();
         readTagNames();
+    }
+
+    private static void loadDefaults() {
+        influxUrl = "http://localhost:8086";
+        influxDatabase = "ruuvi";
+        influxMeasurement = "ruuvi_measurements";
+        influxUser = "ruuvi";
+        influxPassword = "ruuvi";
+        influxRetentionPolicy = "autogen";
+        influxGzip = true;
+        influxBatch = true;
+        influxBatchMaxSize = 2000;
+        influxBatchMaxTimeMs = 100;
+        measurementUpdateLimit = 9900;
+        storageMethod = "influxdb";
+        storageValues = "extended";
+        filterMode = (s) -> true;
+        FILTER_MACS.clear();
+        TAG_NAMES.clear();
+        scanCommand = DEFAULT_SCAN_COMMAND.split(" ");
+        dumpCommand = DEFAULT_DUMP_COMMAND.split(" ");
+        dbConnection = null;
+        timestampProvider = System::currentTimeMillis;
+        limitingStrategy = new DiscardUntilEnoughTimeHasElapsedStrategy();
+        defaultWithMotionSensitivityStrategyThreshold = 0.05;
+        defaultWithMotionSensitivityStrategyNumberOfPreviousMeasurementsToKeep = 3;
+        tagProperties = new HashMap<>();
     }
 
     private static void readConfig() {
@@ -333,7 +365,9 @@ public abstract class Config {
     }
 
     public static LimitingStrategy getLimitingStrategy(String mac) {
-        return tagProperties.getOrDefault(mac, TagProperties.defaultValues()).getLimitingStrategy();
+        return Optional.ofNullable(tagProperties.get(mac))
+            .map(TagProperties::getLimitingStrategy)
+            .orElse(null);
     }
 
     public static Double getDefaultWithMotionSensitivityStrategyThreshold() {

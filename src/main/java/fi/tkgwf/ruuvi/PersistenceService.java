@@ -5,6 +5,8 @@ import fi.tkgwf.ruuvi.config.Config;
 import fi.tkgwf.ruuvi.db.DBConnection;
 import fi.tkgwf.ruuvi.strategy.LimitingStrategy;
 
+import java.util.Optional;
+
 class PersistenceService implements AutoCloseable {
     private final DBConnection db;
     private final LimitingStrategy limitingStrategy;
@@ -24,7 +26,11 @@ class PersistenceService implements AutoCloseable {
     }
 
     void store(final RuuviMeasurement measurement) {
-        this.limitingStrategy.apply(measurement).ifPresent(db::save);
+        Optional.ofNullable(measurement.mac)
+            .map(Config::getLimitingStrategy)
+            .orElse(limitingStrategy)
+            .apply(measurement)
+            .ifPresent(db::save);
     }
 
 }
