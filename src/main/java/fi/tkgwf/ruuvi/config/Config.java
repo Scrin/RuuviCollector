@@ -4,11 +4,20 @@ import fi.tkgwf.ruuvi.db.DBConnection;
 import fi.tkgwf.ruuvi.db.DummyDBConnection;
 import fi.tkgwf.ruuvi.db.InfluxDBConnection;
 import fi.tkgwf.ruuvi.db.LegacyInfluxDBConnection;
+import fi.tkgwf.ruuvi.strategy.LimitingStrategy;
+import fi.tkgwf.ruuvi.strategy.impl.DefaultDiscardingWithMotionSensitivityStrategy;
+import fi.tkgwf.ruuvi.strategy.impl.DiscardUntilEnoughTimeHasElapsedStrategy;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.log4j.Logger;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,9 +25,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Predicate;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
 
 public abstract class Config {
 
@@ -26,28 +39,69 @@ public abstract class Config {
     private static final String RUUVI_COLLECTOR_PROPERTIES = "ruuvi-collector.properties";
     private static final String RUUVI_NAMES_PROPERTIES = "ruuvi-names.properties";
 
-    private static String influxUrl = "http://localhost:8086";
-    private static String influxDatabase = "ruuvi";
-    private static String influxMeasurement = "ruuvi_measurements";
-    private static String influxUser = "ruuvi";
-    private static String influxPassword = "ruuvi";
-    private static String influxRetentionPolicy = "autogen";
-    private static boolean influxGzip = true;
-    private static boolean influxBatch = true;
-    private static int influxBatchMaxSize = 2000;
-    private static int influxBatchMaxTimeMs = 100;
-    private static long measurementUpdateLimit = 9900;
-    private static String storageMethod = "influxdb";
-    private static String storageValues = "extended";
-    private static Predicate<String> filterMode = (s) -> true;
+    private static final String DEFAULT_SCAN_COMMAND = "hcitool lescan --duplicates --passive";
+    private static final String DEFAULT_DUMP_COMMAND = "hcidump --raw";
+
+    private static String influxUrl;
+    private static String influxDatabase;
+    private static String influxMeasurement;
+    private static String influxUser;
+    private static String influxPassword;
+    private static String influxRetentionPolicy;
+    private static boolean influxGzip;
+    private static boolean influxBatch;
+    private static int influxBatchMaxSize;
+    private static int influxBatchMaxTimeMs;
+    private static long measurementUpdateLimit;
+    private static String storageMethod;
+    private static String storageValues;
+    private static Predicate<String> filterMode;
     private static final Set<String> FILTER_MACS = new HashSet<>();
     private static final Map<String, String> TAG_NAMES = new HashMap<>();
-    private static String[] scanCommand = {"hcitool", "lescan", "--duplicates", "--passive"};
-    private static String[] dumpCommand = {"hcidump", "--raw"};
+    private static String[] scanCommand;
+    private static String[] dumpCommand;
+    private static DBConnection dbConnection;
+    private static Supplier<Long> timestampProvider;
+    private static LimitingStrategy limitingStrategy;
+    private static Double defaultWithMotionSensitivityStrategyThreshold;
+    private static int defaultWithMotionSensitivityStrategyNumberOfPreviousMeasurementsToKeep;
+    private static Map<String, TagProperties> tagProperties;
 
     static {
+        reload();
+    }
+
+    public static void reload() {
+        loadDefaults();
         readConfig();
         readTagNames();
+    }
+
+    private static void loadDefaults() {
+        influxUrl = "http://localhost:8086";
+        influxDatabase = "ruuvi";
+        influxMeasurement = "ruuvi_measurements";
+        influxUser = "ruuvi";
+        influxPassword = "ruuvi";
+        influxRetentionPolicy = "autogen";
+        influxGzip = true;
+        influxBatch = true;
+        influxBatchMaxSize = 2000;
+        influxBatchMaxTimeMs = 100;
+        measurementUpdateLimit = 9900;
+        storageMethod = "influxdb";
+        storageValues = "extended";
+        filterMode = (s) -> true;
+        FILTER_MACS.clear();
+        TAG_NAMES.clear();
+        scanCommand = DEFAULT_SCAN_COMMAND.split(" ");
+        dumpCommand = DEFAULT_DUMP_COMMAND.split(" ");
+        dbConnection = null;
+        timestampProvider = System::currentTimeMillis;
+        limitingStrategy = new DiscardUntilEnoughTimeHasElapsedStrategy();
+        defaultWithMotionSensitivityStrategyThreshold = 0.05;
+        defaultWithMotionSensitivityStrategyNumberOfPreviousMeasurementsToKeep = 3;
+        tagProperties = new HashMap<>();
     }
 
     private static void readConfig() {
@@ -57,90 +111,114 @@ public abstract class Config {
                 LOG.debug("Config: " + configFile);
                 Properties props = new Properties();
                 props.load(new FileInputStream(configFile));
-                Enumeration<?> e = props.propertyNames();
-                while (e.hasMoreElements()) {
-                    String key = (String) e.nextElement();
-                    String value = props.getProperty(key);
-                    switch (key) {
-                        case "influxUrl":
-                            influxUrl = value;
-                            break;
-                        case "influxDatabase":
-                            influxDatabase = value;
-                            break;
-                        case "influxMeasurement":
-                            influxMeasurement = value;
-                            break;
-                        case "influxUser":
-                            influxUser = value;
-                            break;
-                        case "influxPassword":
-                            influxPassword = value;
-                            break;
-                        case "measurementUpdateLimit":
-                            try {
-                                measurementUpdateLimit = Long.parseLong(value);
-                            } catch (NumberFormatException ex) {
-                                LOG.warn("Malformed number format for influxUpdateLimit: '" + value + '\'');
-                            }
-                            break;
-                        case "storage.method":
-                            storageMethod = value;
-                            break;
-                        case "storage.values":
-                            storageValues = value;
-                            break;
-                        case "filter.mode":
-                            switch (value) {
-                                case "blacklist":
-                                    filterMode = (s) -> !FILTER_MACS.contains(s);
-                                    break;
-                                case "whitelist":
-                                    filterMode = FILTER_MACS::contains;
-                            }
-                            break;
-                        case "filter.macs":
-                            Arrays.stream(value.split(","))
-                                    .map(String::trim)
-                                    .filter(s -> s.length() == 12)
-                                    .map(String::toUpperCase)
-                                    .forEach(FILTER_MACS::add);
-                            break;
-                        case "command.scan":
-                            scanCommand = value.split(" ");
-                            break;
-                        case "command.dump":
-                            dumpCommand = value.split(" ");
-                            break;
-                        case "influxRetentionPolicy":
-                            influxRetentionPolicy = value;
-                            break;
-                        case "influxGzip":
-                            influxGzip = Boolean.parseBoolean(value);
-                            break;
-                        case "influxBatch":
-                            influxBatch = Boolean.parseBoolean(value);
-                            break;
-                        case "influxBatchMaxSize":
-                            try {
-                                influxBatchMaxSize = Integer.parseInt(value);
-                            } catch (NumberFormatException ex) {
-                                LOG.warn("Malformed number format for influxBatchMaxSize: '" + value + '\'');
-                            }
-                            break;
-                        case "influxBatchMaxTime":
-                            try {
-                                influxBatchMaxTimeMs = Integer.parseInt(value);
-                            } catch (NumberFormatException ex) {
-                                LOG.warn("Malformed number format for influxBatchMaxTime: '" + value + '\'');
-                            }
-                            break;
-                    }
-                }
+                readConfigFromProperties(props);
             }
         } catch (URISyntaxException | IOException ex) {
             LOG.warn("Failed to read configuration, using default values...", ex);
         }
+    }
+
+    public static void readConfigFromProperties(final Properties props) {
+        influxUrl = props.getProperty("influxUrl", influxUrl);
+        influxDatabase = props.getProperty("influxDatabase", influxDatabase);
+        influxMeasurement = props.getProperty("influxMeasurement", influxMeasurement);
+        influxUser = props.getProperty("influxUser", influxUser);
+        influxPassword = props.getProperty("influxPassword", influxPassword);
+        measurementUpdateLimit = parseLong(props, "measurementUpdateLimit", measurementUpdateLimit);
+        storageMethod = props.getProperty("storage.method", storageMethod);
+        storageValues = props.getProperty("storage.values", storageValues);
+        filterMode = parseFilterMode(props);
+        FILTER_MACS.addAll(parseFilterMacs(props));
+        scanCommand = props.getProperty("command.scan", DEFAULT_SCAN_COMMAND).split(" ");
+        dumpCommand = props.getProperty("command.dump", DEFAULT_DUMP_COMMAND).split(" ");
+        influxRetentionPolicy = props.getProperty("influxRetentionPolicy", influxRetentionPolicy);
+        influxGzip = parseBoolean(props, "influxGzip", influxGzip);
+        influxBatch = parseBoolean(props, "influxBatch", influxBatch);
+        influxBatchMaxSize = parseInteger(props, "influxBatchMaxSize", influxBatchMaxSize);
+        influxBatchMaxTimeMs = parseInteger(props, "influxBatchMaxTime", influxBatchMaxTimeMs);
+        limitingStrategy = parseLimitingStrategy(props);
+        defaultWithMotionSensitivityStrategyThreshold = parseDouble(props, "limitingStrategy.defaultWithMotionSensitivity.threshold", defaultWithMotionSensitivityStrategyThreshold);
+        defaultWithMotionSensitivityStrategyNumberOfPreviousMeasurementsToKeep = parseInteger(props, "limitingStrategy.defaultWithMotionSensitivity.numberOfMeasurementsToKeep", defaultWithMotionSensitivityStrategyNumberOfPreviousMeasurementsToKeep);
+        tagProperties = parseTagProperties(props);
+    }
+
+    private static Map<String, TagProperties> parseTagProperties(final Properties props) {
+        final Map<String, Map<String, String>> tagProps = props.entrySet().stream()
+            .map(e -> Pair.of(String.valueOf(e.getKey()), String.valueOf(e.getValue())))
+            .filter(p -> p.getLeft().startsWith("tag."))
+            .collect(Collectors.groupingBy(extractMacAddressFromTagPropertyName(),
+                toMap(extractKeyFromTagPropertyName(), Pair::getRight)));
+        return tagProps.entrySet().stream().map(e -> {
+            final TagProperties.Builder builder = TagProperties.builder(e.getKey());
+            e.getValue().forEach(builder::add);
+            return builder.build();
+        }).collect(Collectors.toMap(TagProperties::getMac, t -> t));
+    }
+
+    private static Function<Pair<String, String>, String> extractKeyFromTagPropertyName() {
+        return p -> p.getLeft().substring(17, p.getLeft().length());
+    }
+
+    private static Function<Pair<String, String>, String> extractMacAddressFromTagPropertyName() {
+        return p -> p.getLeft().substring(4, 16);
+    }
+
+    private static LimitingStrategy parseLimitingStrategy(final Properties props) {
+        final String strategy = props.getProperty("limitingStrategy");
+        if (strategy != null) {
+            if ("defaultWithMotionSensitivity".equals(strategy)) {
+                return new DefaultDiscardingWithMotionSensitivityStrategy();
+            }
+        }
+        return new DiscardUntilEnoughTimeHasElapsedStrategy();
+    }
+
+    private static Collection<? extends String> parseFilterMacs(final Properties props) {
+        return Optional.ofNullable(props.getProperty("filter.macs"))
+            .map(value -> Arrays.stream(value.split(","))
+                .map(String::trim)
+                .filter(s -> s.length() == 12)
+                .map(String::toUpperCase).collect(toSet()))
+            .orElse(Collections.emptySet());
+    }
+
+    private static Predicate<String> parseFilterMode(final Properties props) {
+        final String filter = props.getProperty("filter.mode");
+        if (filter != null) {
+            switch (filter) {
+                case "blacklist":
+                    return (s) -> !FILTER_MACS.contains(s);
+                case "whitelist":
+                    return FILTER_MACS::contains;
+            }
+        }
+        return filterMode;
+    }
+
+    private static long parseLong(final Properties props, final String key, final long defaultValue) {
+        return parseNumber(props, key, defaultValue, Long::parseLong);
+    }
+
+    private static int parseInteger(final Properties props, final String key, final int defaultValue) {
+        return parseNumber(props, key, defaultValue, Integer::parseInt);
+    }
+
+    private static double parseDouble(final Properties props, final String key, final double defaultValue) {
+        return parseNumber(props, key, defaultValue, Double::parseDouble);
+    }
+
+    private static <N extends Number> N parseNumber(final Properties props, final String key, final N defaultValue, final Function<String, N> parser) {
+        final String value = props.getProperty(key);
+        try {
+            return Optional.ofNullable(value).map(parser).orElse(defaultValue);
+        } catch (final NumberFormatException ex) {
+            LOG.warn("Malformed number format for " + key + ": '" + value + '\'');
+            return defaultValue;
+        }
+    }
+
+    private static boolean parseBoolean(final Properties props, final String key, final boolean defaultValue) {
+        return Optional.ofNullable(props.getProperty(key)).map(Boolean::parseBoolean).orElse(defaultValue);
     }
 
     private static File findConfigFiles(final String propertiesFileName) throws URISyntaxException {
@@ -190,6 +268,13 @@ public abstract class Config {
     }
 
     public static DBConnection getDBConnection() {
+        if (dbConnection == null) {
+            dbConnection = createDBConnection();
+        }
+        return dbConnection;
+    }
+
+    private static DBConnection createDBConnection() {
         switch (storageMethod) {
             case "influxdb":
                 return new InfluxDBConnection();
@@ -198,7 +283,12 @@ public abstract class Config {
             case "dummy":
                 return new DummyDBConnection();
             default:
-                throw new IllegalArgumentException("Invalid storage method: " + storageMethod);
+                try {
+                    LOG.info("Trying to use custom DB dbConnection class: " + storageMethod);
+                    return (DBConnection) Class.forName(storageMethod).newInstance();
+                } catch (final Exception e) {
+                    throw new IllegalArgumentException("Invalid storage method: " + storageMethod, e);
+                }
         }
     }
 
@@ -264,5 +354,27 @@ public abstract class Config {
 
     public static String getTagName(String mac) {
         return TAG_NAMES.get(mac);
+    }
+
+    public static Supplier<Long> getTimestampProvider() {
+        return timestampProvider;
+    }
+
+    public static LimitingStrategy getLimitingStrategy() {
+        return limitingStrategy;
+    }
+
+    public static LimitingStrategy getLimitingStrategy(String mac) {
+        return Optional.ofNullable(tagProperties.get(mac))
+            .map(TagProperties::getLimitingStrategy)
+            .orElse(null);
+    }
+
+    public static Double getDefaultWithMotionSensitivityStrategyThreshold() {
+        return defaultWithMotionSensitivityStrategyThreshold;
+    }
+
+    public static int getDefaultWithMotionSensitivityStrategyNumberOfPreviousMeasurementsToKeep() {
+        return defaultWithMotionSensitivityStrategyNumberOfPreviousMeasurementsToKeep;
     }
 }

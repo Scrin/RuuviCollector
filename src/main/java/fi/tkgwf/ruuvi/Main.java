@@ -2,15 +2,14 @@ package fi.tkgwf.ruuvi;
 
 import fi.tkgwf.ruuvi.bean.HCIData;
 import fi.tkgwf.ruuvi.config.Config;
-import fi.tkgwf.ruuvi.db.DBConnection;
 import fi.tkgwf.ruuvi.handler.BeaconHandler;
 import fi.tkgwf.ruuvi.handler.impl.DataFormatV2;
 import fi.tkgwf.ruuvi.handler.impl.DataFormatV3;
 import fi.tkgwf.ruuvi.handler.impl.DataFormatV4;
+import fi.tkgwf.ruuvi.handler.impl.DataFormatV5;
 import fi.tkgwf.ruuvi.utils.HCIParser;
 import fi.tkgwf.ruuvi.utils.InfluxDataMigrator;
 import fi.tkgwf.ruuvi.utils.MeasurementValueCalculator;
-import fi.tkgwf.ruuvi.handler.impl.DataFormatV5;
 import fi.tkgwf.ruuvi.utils.Utils;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -28,7 +27,7 @@ public class Main {
 
     private final List<BeaconHandler> beaconHandlers = new LinkedList<>();
 
-    public void initializeHandlers() {
+    private void initializeHandlers() {
         beaconHandlers.add(new DataFormatV2());
         beaconHandlers.add(new DataFormatV3());
         beaconHandlers.add(new DataFormatV4());
@@ -41,7 +40,6 @@ public class Main {
             migrator.migrate();
         } else {
             Main m = new Main();
-            m.initializeHandlers();
             if (!m.run()) {
                 System.exit(1);
             }
@@ -70,7 +68,7 @@ public class Main {
      *
      * @return true if the run ends gracefully, false in case of severe errors
      */
-    private boolean run() {
+    public boolean run() {
         BufferedReader reader;
         try {
             reader = startHciListeners();
@@ -79,10 +77,16 @@ public class Main {
             return false;
         }
         LOG.info("BLE listener started successfully, waiting for data... \nIf you don't get any data, check that you are able to run 'hcitool lescan' and 'hcidump --raw' without issues");
-        DBConnection db = Config.getDBConnection();
+        return run(reader);
+    }
+
+    boolean run(final BufferedReader reader) {
+        if (beaconHandlers.isEmpty()) {
+            initializeHandlers();
+        }
         HCIParser parser = new HCIParser();
         boolean dataReceived = false;
-        try {
+        try (final PersistenceService persistenceService = new PersistenceService()) {
             String line, latestMAC = null;
             while ((line = reader.readLine()) != null) {
                 if (!dataReceived) {
@@ -100,10 +104,11 @@ public class Main {
                     HCIData hciData = parser.readLine(line);
                     if (hciData != null) {
                         beaconHandlers.stream()
+                                .filter(handler -> handler.canHandle(hciData))
                                 .map(handler -> handler.handle(hciData))
                                 .filter(Objects::nonNull)
                                 .map(MeasurementValueCalculator::calculateAllValues)
-                                .forEach(db::save);
+                                .forEach(persistenceService::store);
                     }
                 } catch (Exception ex) {
                     LOG.warn("Uncaught exception while handling measurements from MAC address \"" + latestMAC + "\", if this repeats and this is not a Ruuvitag, consider blacklisting it", ex);
@@ -114,8 +119,6 @@ public class Main {
         } catch (IOException ex) {
             LOG.error("Uncaught exception while reading measurements", ex);
             return false;
-        } finally {
-            db.close();
         }
         return true;
     }

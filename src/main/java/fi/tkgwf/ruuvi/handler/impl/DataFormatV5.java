@@ -5,28 +5,17 @@ import fi.tkgwf.ruuvi.bean.RuuviMeasurement;
 import fi.tkgwf.ruuvi.config.Config;
 import fi.tkgwf.ruuvi.handler.BeaconHandler;
 import fi.tkgwf.ruuvi.utils.Utils;
+
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 public class DataFormatV5 implements BeaconHandler {
 
     private final int[] RUUVI_COPANY_IDENTIFIER = {0x99, 0x04}; // 0x0499
-    /**
-     * Contains the MAC address as key, and the timestamp of last sent update as
-     * value
-     */
-    private final Map<String, Long> updatedMacs;
-    private final long updateLimit = Config.getMeasurementUpdateLimit();
-
-    public DataFormatV5() {
-        updatedMacs = new HashMap<>();
-    }
 
     @Override
     public RuuviMeasurement handle(HCIData hciData) {
         HCIData.Report.AdvertisementData adData = hciData.findAdvertisementDataByType(0xFF);
-        if (adData == null || !shouldUpdate(hciData.mac)) {
+        if (adData == null || !Config.isAllowedMAC(hciData.mac)) {
             return null;
         }
         byte[] data = adData.dataBytes();
@@ -82,15 +71,21 @@ public class DataFormatV5 implements BeaconHandler {
         return m;
     }
 
-    private boolean shouldUpdate(String mac) {
-        if (!Config.isAllowedMAC(mac)) {
+    @Override
+    public boolean canHandle(HCIData hciData) {
+        HCIData.Report.AdvertisementData adData = hciData.findAdvertisementDataByType(0xFF);
+        if (adData == null) {
             return false;
         }
-        Long lastUpdate = updatedMacs.get(mac);
-        if (lastUpdate == null || lastUpdate + updateLimit < System.currentTimeMillis()) {
-            updatedMacs.put(mac, System.currentTimeMillis());
-            return true;
+        byte[] data = adData.dataBytes();
+        if (data.length < 2 || (data[0] & 0xFF) != RUUVI_COPANY_IDENTIFIER[0] || (data[1] & 0xFF) != RUUVI_COPANY_IDENTIFIER[1]) {
+            return false;
         }
-        return false;
+        data = Arrays.copyOfRange(data, 2, data.length); // discard the first 2 bytes, the company identifier
+        if (data.length < 24 || data[0] != 5) {
+            return false;
+        }
+        return true;
     }
+
 }

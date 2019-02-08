@@ -11,17 +11,11 @@ import java.util.Map;
 public class DataFormatV3 implements BeaconHandler {
 
     private final int[] RUUVI_COPANY_IDENTIFIER = {0x99, 0x04}; // 0x0499
-    private final Map<String, Long> updatedMacs;
-    private final long updateLimit = Config.getMeasurementUpdateLimit();
-
-    public DataFormatV3() {
-        updatedMacs = new HashMap<>();
-    }
 
     @Override
     public RuuviMeasurement handle(HCIData hciData) {
         HCIData.Report.AdvertisementData adData = hciData.findAdvertisementDataByType(0xFF);
-        if (adData == null || !shouldUpdate(hciData.mac)) {
+        if (adData == null || !Config.isAllowedMAC(hciData.mac)) {
             return null;
         }
         byte[] data = adData.dataBytes();
@@ -61,15 +55,21 @@ public class DataFormatV3 implements BeaconHandler {
         return m;
     }
 
-    private boolean shouldUpdate(String mac) {
-        if (!Config.isAllowedMAC(mac)) {
+    @Override
+    public boolean canHandle(HCIData hciData) {
+        HCIData.Report.AdvertisementData adData = hciData.findAdvertisementDataByType(0xFF);
+        if (adData == null) {
             return false;
         }
-        Long lastUpdate = updatedMacs.get(mac);
-        if (lastUpdate == null || lastUpdate + updateLimit < System.currentTimeMillis()) {
-            updatedMacs.put(mac, System.currentTimeMillis());
-            return true;
+        byte[] data = adData.dataBytes();
+        if (data.length < 2 || (data[0] & 0xFF) != RUUVI_COPANY_IDENTIFIER[0] || (data[1] & 0xFF) != RUUVI_COPANY_IDENTIFIER[1]) {
+            return false;
         }
-        return false;
+        data = Arrays.copyOfRange(data, 2, data.length); // discard the first 2 bytes, the company identifier
+        if (data.length < 14 || data[0] != 3) {
+            return false;
+        }
+        return true;
     }
+
 }

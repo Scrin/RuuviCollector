@@ -50,7 +50,7 @@ public class InfluxDataMigrator {
 
     public synchronized void migrate() {
         LOG.info("Starting migration...");
-        long start = System.currentTimeMillis();
+        long start = Config.getTimestampProvider().get();
         DBConnection db = Config.getDBConnection();
         // Theres a hard limit (?) of 5 concurrent queries per instance
         InfluxDB influx1 = createInfluxDB();
@@ -116,9 +116,9 @@ public class InfluxDataMigrator {
                     Thread.sleep(50);
                 }
                 /*
-                if (System.currentTimeMillis() % 20 == 0) { // reduce "debug" spam by logging only about 5% of the times
+                if (Config.getTimestampProvider().get() % 20 == 0) { // reduce "debug" spam by logging only about 5% of the times
                     queues.forEach((k, v) -> System.out.println(k + ": " + v.size() + " + " + pendingMeasurements.get(k).size() + " - " + discardedMeasurements.get(k).get()));
-                    long duration = System.currentTimeMillis() - start;
+                    long duration = Config.getTimestampProvider().get() - start;
                     System.out.println("progress: " + counter + " elapsed: " + duration / 1000d + " sec " + (counter / (duration / 1000d)) + " per sec");
                     System.out.println("-----");
                 }
@@ -162,7 +162,7 @@ public class InfluxDataMigrator {
         } catch (InterruptedException ex) {
             LOG.error("Interrupted", ex);
         }
-        long duration = System.currentTimeMillis() - start;
+        long duration = Config.getTimestampProvider().get() - start;
         LOG.info("Finished migration! " + counter + " measurements migrated, took " + duration / 1000d + " seconds (" + (counter / (duration / 1000d)) + " measurements per second)");
         queues.keySet().stream().sorted().forEach(k -> LOG.info(k + " discarded: " + (pendingMeasurements.get(k).size() + discardedMeasurements.get(k).get())));
         influx1.close();
