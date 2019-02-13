@@ -3,6 +3,9 @@ package fi.tkgwf.ruuvi.utils;
 import fi.tkgwf.ruuvi.bean.RuuviMeasurement;
 import fi.tkgwf.ruuvi.config.Config;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.influxdb.dto.BatchPoints;
@@ -10,12 +13,44 @@ import org.influxdb.dto.Point;
 import java.util.function.Function;
 
 public class InfluxDBConverter {
+    private static final Collection<String> RAW_STORAGE_VALUES;
+
+    static {
+        final Collection<String> rawStorageValues = new HashSet<>();
+        rawStorageValues.add("temperature");
+        rawStorageValues.add("humidity");
+        rawStorageValues.add("pressure");
+        rawStorageValues.add("accelerationX");
+        rawStorageValues.add("accelerationY");
+        rawStorageValues.add("accelerationZ");
+        rawStorageValues.add("batteryVoltage");
+        rawStorageValues.add("txPower");
+        rawStorageValues.add("movementCounter");
+        rawStorageValues.add("measurementSequenceNumber");
+        rawStorageValues.add("rssi");
+        RAW_STORAGE_VALUES = Collections.unmodifiableCollection(rawStorageValues);
+    }
 
     public static Point toInflux(RuuviMeasurement measurement) {
         return toInflux(measurement, Config.getStorageValues().equals("extended"));
     }
 
     public static Point toInflux(RuuviMeasurement measurement, boolean extended) {
+        if (extended) {
+            return toInflux(measurement, v -> true);
+        }
+        return toInflux(measurement, RAW_STORAGE_VALUES::contains);
+    }
+
+    /**
+     * Converts a {@link RuuviMeasurement} into an {@link org.influxdb.dto.Point}.
+     *
+     * @param measurement The measurement to convert
+     * @param allowField A function that tells whether any given field of the given {@code RuuviMeasurement} should
+     *                   be included in the resulting {@code Point} or not
+     * @return A {@code Point}, ready to be saved into InfluxDB
+     */
+    public static Point toInflux(RuuviMeasurement measurement, Function<String, Boolean> allowField) {
         Point.Builder p = Point.measurement(Config.getInfluxMeasurement()).tag("mac", measurement.mac);
         String name = Config.getTagName(measurement.mac);
         if (name != null) {
@@ -27,36 +62,35 @@ public class InfluxDBConverter {
         if (measurement.time != null) {
             p.time(measurement.time, TimeUnit.MILLISECONDS);
         }
-        addValueIfNotNull(p, "temperature", measurement, RuuviMeasurement::getTemperature);
-        addValueIfNotNull(p, "humidity", measurement, RuuviMeasurement::getHumidity);
-        addValueIfNotNull(p, "pressure", measurement, RuuviMeasurement::getPressure);
-        addValueIfNotNull(p, "accelerationX", measurement, RuuviMeasurement::getAccelerationX);
-        addValueIfNotNull(p, "accelerationY", measurement, RuuviMeasurement::getAccelerationY);
-        addValueIfNotNull(p, "accelerationZ", measurement, RuuviMeasurement::getAccelerationZ);
-        addValueIfNotNull(p, "batteryVoltage", measurement, RuuviMeasurement::getBatteryVoltage);
-        addValueIfNotNull(p, "txPower", measurement, RuuviMeasurement::getTxPower);
-        addValueIfNotNull(p, "movementCounter", measurement, RuuviMeasurement::getMovementCounter);
-        addValueIfNotNull(p, "measurementSequenceNumber", measurement, RuuviMeasurement::getMeasurementSequenceNumber);
-        addValueIfNotNull(p, "rssi", measurement, RuuviMeasurement::getRssi);
-        if (extended) {
-            addValueIfNotNull(p, "accelerationTotal", measurement, RuuviMeasurement::getAccelerationTotal);
-            addValueIfNotNull(p, "absoluteHumidity", measurement, RuuviMeasurement::getAbsoluteHumidity);
-            addValueIfNotNull(p, "dewPoint", measurement, RuuviMeasurement::getDewPoint);
-            addValueIfNotNull(p, "equilibriumVaporPressure", measurement, RuuviMeasurement::getEquilibriumVaporPressure);
-            addValueIfNotNull(p, "airDensity", measurement, RuuviMeasurement::getAirDensity);
-            addValueIfNotNull(p, "accelerationAngleFromX", measurement, RuuviMeasurement::getAccelerationAngleFromX);
-            addValueIfNotNull(p, "accelerationAngleFromY", measurement, RuuviMeasurement::getAccelerationAngleFromY);
-            addValueIfNotNull(p, "accelerationAngleFromZ", measurement, RuuviMeasurement::getAccelerationAngleFromZ);
-        }
+        addValueIfAllowed(p, "temperature", measurement, RuuviMeasurement::getTemperature, allowField);
+        addValueIfAllowed(p, "humidity", measurement, RuuviMeasurement::getHumidity, allowField);
+        addValueIfAllowed(p, "pressure", measurement, RuuviMeasurement::getPressure, allowField);
+        addValueIfAllowed(p, "accelerationX", measurement, RuuviMeasurement::getAccelerationX, allowField);
+        addValueIfAllowed(p, "accelerationY", measurement, RuuviMeasurement::getAccelerationY, allowField);
+        addValueIfAllowed(p, "accelerationZ", measurement, RuuviMeasurement::getAccelerationZ, allowField);
+        addValueIfAllowed(p, "batteryVoltage", measurement, RuuviMeasurement::getBatteryVoltage, allowField);
+        addValueIfAllowed(p, "txPower", measurement, RuuviMeasurement::getTxPower, allowField);
+        addValueIfAllowed(p, "movementCounter", measurement, RuuviMeasurement::getMovementCounter, allowField);
+        addValueIfAllowed(p, "measurementSequenceNumber", measurement, RuuviMeasurement::getMeasurementSequenceNumber, allowField);
+        addValueIfAllowed(p, "rssi", measurement, RuuviMeasurement::getRssi, allowField);
+        addValueIfAllowed(p, "accelerationTotal", measurement, RuuviMeasurement::getAccelerationTotal, allowField);
+        addValueIfAllowed(p, "absoluteHumidity", measurement, RuuviMeasurement::getAbsoluteHumidity, allowField);
+        addValueIfAllowed(p, "dewPoint", measurement, RuuviMeasurement::getDewPoint, allowField);
+        addValueIfAllowed(p, "equilibriumVaporPressure", measurement, RuuviMeasurement::getEquilibriumVaporPressure, allowField);
+        addValueIfAllowed(p, "airDensity", measurement, RuuviMeasurement::getAirDensity, allowField);
+        addValueIfAllowed(p, "accelerationAngleFromX", measurement, RuuviMeasurement::getAccelerationAngleFromX, allowField);
+        addValueIfAllowed(p, "accelerationAngleFromY", measurement, RuuviMeasurement::getAccelerationAngleFromY, allowField);
+        addValueIfAllowed(p, "accelerationAngleFromZ", measurement, RuuviMeasurement::getAccelerationAngleFromZ, allowField);
         return p.build();
     }
 
-    private static void addValueIfNotNull(Point.Builder point,
+    private static void addValueIfAllowed(Point.Builder point,
                                           String name,
                                           RuuviMeasurement measurement,
-                                          Function<RuuviMeasurement, ? extends Number> getter) {
+                                          Function<RuuviMeasurement, ? extends Number> getter,
+                                          Function<String, Boolean> allowField) {
         final Number value = getter.apply(measurement);
-        if (value != null) {
+        if (value != null && allowField.apply(name)) {
             point.addField(name, value);
         }
     }
@@ -73,11 +107,11 @@ public class InfluxDBConverter {
         createAndAddLegacyFormatPointIfNotNull(points, "batteryVoltage", measurement.batteryVoltage, null, null);
         createAndAddLegacyFormatPointIfNotNull(points, "rssi", measurement.rssi, null, null);
         return BatchPoints
-                .database(Config.getInfluxDatabase())
-                .tag("protocolVersion", String.valueOf(measurement.dataFormat))
-                .tag("mac", measurement.mac)
-                .points(points.toArray(new Point[points.size()]))
-                .build();
+            .database(Config.getInfluxDatabase())
+            .tag("protocolVersion", String.valueOf(measurement.dataFormat))
+            .tag("mac", measurement.mac)
+            .points(points.toArray(new Point[points.size()]))
+            .build();
     }
 
     private static void createAndAddLegacyFormatPointIfNotNull(List<Point> points, String measurement, Number value, String extraTagKey, String extraTagValue) {

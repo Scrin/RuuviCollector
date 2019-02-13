@@ -4,10 +4,13 @@ import fi.tkgwf.ruuvi.bean.RuuviMeasurement;
 import org.influxdb.dto.Point;
 import org.junit.jupiter.api.Test;
 
+import java.util.function.Function;
+
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class InfluxDBConverterTest {
+
     @Test
     void toInfluxShouldGiveExtendedValues() {
         final RuuviMeasurement measurement = createMeasurement();
@@ -35,6 +38,39 @@ class InfluxDBConverterTest {
         assertFalse(point.toString().contains("accelerationAngleFromY"));
         assertFalse(point.toString().contains("accelerationAngleFromZ"));
         assertTrue(point.toString().contains("rssi=13"));
+    }
+
+    @Test
+    void toInfluxWithAllowFunctionShouldIncludeRequiredValuesOnly() {
+        final RuuviMeasurement measurement = createMeasurement();
+        final Function<String, Boolean> allowFunction = fieldName ->
+            fieldName.equals("accelerationTotal")
+                || fieldName.equals("measurementSequenceNumber")
+                || fieldName.equals("txPower");
+        measurement.measurementSequenceNumber = null;
+        final Point point = InfluxDBConverter.toInflux(measurement, allowFunction);
+        assertTrue(point.toString().contains("mac")); // cannot be disabled
+        assertTrue(point.toString().contains("dataFormat")); // cannot be disabled
+        assertTrue(point.toString().contains("time")); // cannot be disabled
+        assertFalse(point.toString().contains("temperature"));
+        assertFalse(point.toString().contains("humidity"));
+        assertFalse(point.toString().contains("pressure"));
+        assertFalse(point.toString().contains("accelerationX"));
+        assertFalse(point.toString().contains("accelerationY"));
+        assertFalse(point.toString().contains("accelerationZ"));
+        assertFalse(point.toString().contains("batteryVoltage"));
+        assertTrue(point.toString().contains("txPower"));
+        assertFalse(point.toString().contains("movementCounter"));
+        assertFalse(point.toString().contains("measurementSequenceNumber")); // allowed but null -> should not be included
+        assertFalse(point.toString().contains("rssi"));
+        assertTrue(point.toString().contains("accelerationTotal"));
+        assertFalse(point.toString().contains("absoluteHumidity"));
+        assertFalse(point.toString().contains("dewPoint"));
+        assertFalse(point.toString().contains("equilibriumVaporPressure"));
+        assertFalse(point.toString().contains("airDensity"));
+        assertFalse(point.toString().contains("accelerationAngleFromX"));
+        assertFalse(point.toString().contains("accelerationAngleFromY"));
+        assertFalse(point.toString().contains("accelerationAngleFromZ"));
     }
 
     private static RuuviMeasurement createMeasurement() {
