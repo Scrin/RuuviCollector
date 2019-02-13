@@ -126,6 +126,102 @@ public class RuuviMeasurement {
         return "RuuviMeasurement{" + "time=" + time + ", name=" + name + ", mac=" + mac + ", dataFormat=" + dataFormat + ", temperature=" + temperature + ", humidity=" + humidity + ", pressure=" + pressure + ", accelerationX=" + accelerationX + ", accelerationY=" + accelerationY + ", accelerationZ=" + accelerationZ + ", batteryVoltage=" + batteryVoltage + ", txPower=" + txPower + ", movementCounter=" + movementCounter + ", measurementSequenceNumber=" + measurementSequenceNumber + ", tagID=" + tagID + ", rssi=" + rssi + ", accelerationTotal=" + accelerationTotal + ", accelerationAngleFromX=" + accelerationAngleFromX + ", accelerationAngleFromY=" + accelerationAngleFromY + ", accelerationAngleFromZ=" + accelerationAngleFromZ + ", absoluteHumidity=" + absoluteHumidity + ", dewPoint=" + dewPoint + ", equilibriumVaporPressure=" + equilibriumVaporPressure + ", airDensity=" + airDensity + '}';
     }
 
+    public Long getTime() {
+        return time;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getMac() {
+        return mac;
+    }
+
+    public Integer getDataFormat() {
+        return dataFormat;
+    }
+
+    public Double getTemperature() {
+        return temperature;
+    }
+
+    public Double getHumidity() {
+        return humidity;
+    }
+
+    public Double getPressure() {
+        return pressure;
+    }
+
+    public Double getAccelerationX() {
+        return accelerationX;
+    }
+
+    public Double getAccelerationY() {
+        return accelerationY;
+    }
+
+    public Double getAccelerationZ() {
+        return accelerationZ;
+    }
+
+    public Double getBatteryVoltage() {
+        return batteryVoltage;
+    }
+
+    public Integer getTxPower() {
+        return txPower;
+    }
+
+    public Integer getMovementCounter() {
+        return movementCounter;
+    }
+
+    public Integer getMeasurementSequenceNumber() {
+        return measurementSequenceNumber;
+    }
+
+    public String getTagID() {
+        return tagID;
+    }
+
+    public Integer getRssi() {
+        return rssi;
+    }
+
+    public Double getAccelerationTotal() {
+        return accelerationTotal;
+    }
+
+    public Double getAccelerationAngleFromX() {
+        return accelerationAngleFromX;
+    }
+
+    public Double getAccelerationAngleFromY() {
+        return accelerationAngleFromY;
+    }
+
+    public Double getAccelerationAngleFromZ() {
+        return accelerationAngleFromZ;
+    }
+
+    public Double getAbsoluteHumidity() {
+        return absoluteHumidity;
+    }
+
+    public Double getDewPoint() {
+        return dewPoint;
+    }
+
+    public Double getEquilibriumVaporPressure() {
+        return equilibriumVaporPressure;
+    }
+
+    public Double getAirDensity() {
+        return airDensity;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
