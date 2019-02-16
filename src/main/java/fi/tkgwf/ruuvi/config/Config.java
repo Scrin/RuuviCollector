@@ -178,7 +178,7 @@ public abstract class Config {
     }
 
     private static Function<Pair<String, String>, String> extractKeyFromTagPropertyName() {
-        return p -> p.getLeft().substring(17, p.getLeft().length());
+        return p -> p.getLeft().substring(17);
     }
 
     private static Function<Pair<String, String>, String> extractMacAddressFromTagPropertyName() {
