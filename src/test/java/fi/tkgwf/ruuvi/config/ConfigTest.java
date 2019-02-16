@@ -2,9 +2,12 @@ package fi.tkgwf.ruuvi.config;
 
 import fi.tkgwf.ruuvi.strategy.impl.DefaultDiscardingWithMotionSensitivityStrategy;
 import fi.tkgwf.ruuvi.strategy.impl.DiscardUntilEnoughTimeHasElapsedStrategy;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Properties;
+import java.util.function.Predicate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -12,6 +15,17 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ConfigTest {
+
+    @BeforeEach
+    void resetConfigBefore() {
+        Config.reload();
+    }
+
+    @AfterAll
+    static void resetConfigAfter() {
+        Config.reload();
+    }
+
     @Test
     void testDefaultStringValue() {
         assertEquals("ruuvi", Config.getInfluxUser());
@@ -89,5 +103,46 @@ class ConfigTest {
 
         // Test that it worked:
         assertEquals("screw", Config.getInfluxUser());
+    }
+
+    @Test
+    void testInfluxDbFieldFilter() {
+        final Properties properties = new Properties();
+        properties.put("storage.values", "whitelist");
+        Config.readConfigFromProperties(properties);
+        Predicate<String> predicate = Config.getAllowedInfluxDbFieldsPredicate();
+
+        assertFalse(predicate.test("quux")); // No values in the whitelist
+        assertFalse(predicate.test("temperature")); // No values in the whitelist
+
+        properties.put("storage.values.list", "foo,bar,temperature,something");
+        Config.readConfigFromProperties(properties);
+        predicate = Config.getAllowedInfluxDbFieldsPredicate();
+
+        assertFalse(predicate.test("quux")); // Not whitelisted
+        assertTrue(predicate.test("temperature")); // Whitelisted
+
+        properties.put("storage.values", "blacklist");
+        Config.readConfigFromProperties(properties);
+        predicate = Config.getAllowedInfluxDbFieldsPredicate();
+
+        assertTrue(predicate.test("quux")); // Not blacklisted
+        assertFalse(predicate.test("temperature")); // Blacklisted
+
+        properties.put("storage.values", "raw");
+        Config.readConfigFromProperties(properties);
+        predicate = Config.getAllowedInfluxDbFieldsPredicate();
+
+        assertFalse(predicate.test("quux")); // Does not exist
+        assertTrue(predicate.test("temperature")); // Allowed
+        assertFalse(predicate.test("dewPoint")); // Not allowed
+
+        properties.put("storage.values", "extended");
+        Config.readConfigFromProperties(properties);
+        predicate = Config.getAllowedInfluxDbFieldsPredicate();
+
+        assertTrue(predicate.test("quux")); // Allowed
+        assertTrue(predicate.test("temperature")); // Allowed
+        assertTrue(predicate.test("dewPoint")); // Allowed
     }
 }

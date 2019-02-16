@@ -14,7 +14,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class InfluxDBConverter {
-    private static final Collection<String> RAW_STORAGE_VALUES;
+    public static final Collection<String> RAW_STORAGE_VALUES;
 
     static {
         final Collection<String> rawStorageValues = new HashSet<>();
@@ -33,7 +33,7 @@ public class InfluxDBConverter {
     }
 
     public static Point toInflux(RuuviMeasurement measurement) {
-        return toInflux(measurement, Config.getStorageValues().equals("extended"));
+        return toInflux(measurement, Config.getAllowedInfluxDbFieldsPredicate());
     }
 
     public static Point toInflux(RuuviMeasurement measurement, boolean extended) {

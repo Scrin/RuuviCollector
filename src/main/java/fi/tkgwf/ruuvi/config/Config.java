@@ -7,6 +7,7 @@ import fi.tkgwf.ruuvi.db.LegacyInfluxDBConnection;
 import fi.tkgwf.ruuvi.strategy.LimitingStrategy;
 import fi.tkgwf.ruuvi.strategy.impl.DefaultDiscardingWithMotionSensitivityStrategy;
 import fi.tkgwf.ruuvi.strategy.impl.DiscardUntilEnoughTimeHasElapsedStrategy;
+import fi.tkgwf.ruuvi.utils.InfluxDBConverter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
@@ -55,6 +56,8 @@ public abstract class Config {
     private static long measurementUpdateLimit;
     private static String storageMethod;
     private static String storageValues;
+    private static final Set<String> FILTER_INFLUXDB_FIELDS = new HashSet<>();
+    private static Predicate<String> influxDbFieldFilter;
     private static Predicate<String> filterMode;
     private static final Set<String> FILTER_MACS = new HashSet<>();
     private static final Map<String, String> TAG_NAMES = new HashMap<>();
@@ -91,6 +94,7 @@ public abstract class Config {
         measurementUpdateLimit = 9900;
         storageMethod = "influxdb";
         storageValues = "extended";
+        influxDbFieldFilter = (s) -> true;
         filterMode = (s) -> true;
         FILTER_MACS.clear();
         TAG_NAMES.clear();
@@ -127,6 +131,8 @@ public abstract class Config {
         measurementUpdateLimit = parseLong(props, "measurementUpdateLimit", measurementUpdateLimit);
         storageMethod = props.getProperty("storage.method", storageMethod);
         storageValues = props.getProperty("storage.values", storageValues);
+        FILTER_INFLUXDB_FIELDS.addAll(parseFilterInfluxDbFields(props));
+        influxDbFieldFilter = createInfluxDbFieldFilter();
         filterMode = parseFilterMode(props);
         FILTER_MACS.addAll(parseFilterMacs(props));
         scanCommand = props.getProperty("command.scan", DEFAULT_SCAN_COMMAND).split(" ");
@@ -140,6 +146,22 @@ public abstract class Config {
         defaultWithMotionSensitivityStrategyThreshold = parseDouble(props, "limitingStrategy.defaultWithMotionSensitivity.threshold", defaultWithMotionSensitivityStrategyThreshold);
         defaultWithMotionSensitivityStrategyNumberOfPreviousMeasurementsToKeep = parseInteger(props, "limitingStrategy.defaultWithMotionSensitivity.numberOfMeasurementsToKeep", defaultWithMotionSensitivityStrategyNumberOfPreviousMeasurementsToKeep);
         tagProperties = parseTagProperties(props);
+    }
+
+    private static Predicate<String> createInfluxDbFieldFilter() {
+        switch (storageValues) {
+            case "raw":
+                return InfluxDBConverter.RAW_STORAGE_VALUES::contains;
+            case "extended":
+                return s -> true;
+            case "whitelist":
+                return FILTER_INFLUXDB_FIELDS::contains;
+            case "blacklist":
+                return s -> !FILTER_INFLUXDB_FIELDS.contains(s);
+            default:
+                LOG.warn("Unknown storage.values value: " + storageValues);
+                return s -> true;
+        }
     }
 
     private static Map<String, TagProperties> parseTagProperties(final Properties props) {
@@ -179,6 +201,14 @@ public abstract class Config {
                 .map(String::trim)
                 .filter(s -> s.length() == 12)
                 .map(String::toUpperCase).collect(toSet()))
+            .orElse(Collections.emptySet());
+    }
+
+    private static Collection<? extends String> parseFilterInfluxDbFields(final Properties props) {
+        return Optional.ofNullable(props.getProperty("storage.values.list"))
+            .map(value -> Arrays.stream(value.split(","))
+                .map(String::trim)
+                .collect(toSet()))
             .orElse(Collections.emptySet());
     }
 
@@ -292,8 +322,18 @@ public abstract class Config {
         }
     }
 
+    /**
+     * Use {@link #getAllowedInfluxDbFieldsPredicate()} instead.
+     *
+     * @return The value of the storage.values configuration property.
+     */
+    @Deprecated
     public static String getStorageValues() {
         return storageValues;
+    }
+
+    public static Predicate<String> getAllowedInfluxDbFieldsPredicate() {
+        return influxDbFieldFilter;
     }
 
     public static String getInfluxUrl() {
