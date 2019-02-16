@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 import org.influxdb.dto.BatchPoints;
 import org.influxdb.dto.Point;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class InfluxDBConverter {
     private static final Collection<String> RAW_STORAGE_VALUES;
@@ -50,7 +51,7 @@ public class InfluxDBConverter {
      *                   be included in the resulting {@code Point} or not
      * @return A {@code Point}, ready to be saved into InfluxDB
      */
-    public static Point toInflux(RuuviMeasurement measurement, Function<String, Boolean> allowField) {
+    public static Point toInflux(RuuviMeasurement measurement, Predicate<String> allowField) {
         Point.Builder p = Point.measurement(Config.getInfluxMeasurement()).tag("mac", measurement.mac);
         String name = Config.getTagName(measurement.mac);
         if (name != null) {
@@ -88,9 +89,9 @@ public class InfluxDBConverter {
                                           String name,
                                           RuuviMeasurement measurement,
                                           Function<RuuviMeasurement, ? extends Number> getter,
-                                          Function<String, Boolean> allowField) {
+                                          Predicate<String> allowField) {
         final Number value = getter.apply(measurement);
-        if (value != null && allowField.apply(name)) {
+        if (value != null && allowField.test(name)) {
             point.addField(name, value);
         }
     }

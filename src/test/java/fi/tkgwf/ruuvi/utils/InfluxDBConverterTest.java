@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.function.Function;
+import java.util.function.Predicate;
 
 import static java.util.Collections.emptySet;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -47,7 +47,7 @@ class InfluxDBConverterTest {
     @Test
     void toInfluxWithAllowFunctionShouldIncludeRequiredValuesOnly() {
         final RuuviMeasurement measurement = createMeasurement();
-        final Function<String, Boolean> allowFunction = fieldName ->
+        final Predicate<String> allowFunction = fieldName ->
             fieldName.equals("accelerationTotal")
                 || fieldName.equals("measurementSequenceNumber")
                 || fieldName.equals("txPower");
