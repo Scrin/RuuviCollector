@@ -4,8 +4,12 @@ import fi.tkgwf.ruuvi.bean.RuuviMeasurement;
 import org.influxdb.dto.Point;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.function.Function;
 
+import static java.util.Collections.emptySet;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -15,29 +19,29 @@ class InfluxDBConverterTest {
     void toInfluxShouldGiveExtendedValues() {
         final RuuviMeasurement measurement = createMeasurement();
         final Point point = InfluxDBConverter.toInflux(measurement);
-        assertFalse(point.toString().contains("null"));
+        assertPointContainsAllValues(point);
     }
 
     @Test
     void toInfluxTrueShouldGiveExtendedValues() {
         final RuuviMeasurement measurement = createMeasurement();
         final Point point = InfluxDBConverter.toInflux(measurement, true);
-        assertFalse(point.toString().contains("null"));
+        assertPointContainsAllValues(point);
     }
 
     @Test
     void toInfluxFalseShouldGiveOnlyRawValues() {
         final RuuviMeasurement measurement = createMeasurement();
         final Point point = InfluxDBConverter.toInflux(measurement, false);
-        assertFalse(point.toString().contains("accelerationTotal"));
-        assertFalse(point.toString().contains("absoluteHumidity"));
-        assertFalse(point.toString().contains("dewPoint"));
-        assertFalse(point.toString().contains("equilibriumVaporPressure"));
-        assertFalse(point.toString().contains("airDensity"));
-        assertFalse(point.toString().contains("accelerationAngleFromX"));
-        assertFalse(point.toString().contains("accelerationAngleFromY"));
-        assertFalse(point.toString().contains("accelerationAngleFromZ"));
-        assertTrue(point.toString().contains("rssi=13"));
+        assertPointContainsAllValuesBut(point,
+            "accelerationTotal",
+            "absoluteHumidity",
+            "dewPoint",
+            "equilibriumVaporPressure",
+            "airDensity",
+            "accelerationAngleFromX",
+            "accelerationAngleFromY",
+            "accelerationAngleFromZ");
     }
 
     @Test
@@ -71,6 +75,30 @@ class InfluxDBConverterTest {
         assertFalse(point.toString().contains("accelerationAngleFromX"));
         assertFalse(point.toString().contains("accelerationAngleFromY"));
         assertFalse(point.toString().contains("accelerationAngleFromZ"));
+    }
+
+    private static void assertPointContainsAllValues(final Point point) {
+        assertPoint(point, allValues(), emptySet());
+    }
+
+    private static void assertPointContainsAllValuesBut(final Point point, final String... notThis) {
+        final Collection<String> shouldContain = new ArrayList<>(allValues());
+        final Collection<String> shouldNotContain = Arrays.asList(notThis);
+        shouldNotContain.forEach(shouldContain::remove);
+        assertPoint(point, shouldContain, shouldNotContain);
+    }
+
+    private static Collection<String> allValues() {
+        return Arrays.asList("mac", "dataFormat", "time", "temperature", "humidity", "pressure",
+            "accelerationX", "accelerationY", "accelerationZ", "batteryVoltage", "txPower", "movementCounter",
+            "measurementSequenceNumber", "rssi", "accelerationTotal", "absoluteHumidity", "dewPoint",
+            "equilibriumVaporPressure", "airDensity", "accelerationAngleFromX", "accelerationAngleFromY",
+            "accelerationAngleFromZ");
+    }
+
+    private static void assertPoint(final Point point, final Collection<String> shouldContain, final Collection<String> shouldNotContain) {
+        shouldContain.forEach(v -> assertTrue(point.toString().contains(v)));
+        shouldNotContain.forEach(v -> assertFalse(point.toString().contains(v)));
     }
 
     private static RuuviMeasurement createMeasurement() {
