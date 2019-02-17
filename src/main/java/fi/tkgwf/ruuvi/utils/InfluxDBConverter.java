@@ -33,7 +33,7 @@ public class InfluxDBConverter {
     }
 
     public static Point toInflux(RuuviMeasurement measurement) {
-        return toInflux(measurement, Config.getAllowedInfluxDbFieldsPredicate());
+        return toInflux(measurement, Config.getAllowedInfluxDbFieldsPredicate(measurement.mac));
     }
 
     public static Point toInflux(RuuviMeasurement measurement, boolean extended) {

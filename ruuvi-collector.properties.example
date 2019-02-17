@@ -48,13 +48,15 @@
 # dummy           = Logs the measurements to the log rather than sending them anywhere, feasible for testing and development
 #storage.method=influxdb
 
-# Values to store, the collector is capable of calculating additional values from the values received from a tag, for example absolute humdity and dew point
-# Valid values "raw" and "extended"
-# raw      = Save only the raw values received from the tag
-# extended = In addition to the above, calculate additional values such as absolute humidity, dew point, total acceleration and air density
-#            NOTE: the influxdb_legacy storage method does not support extended values
+# Values to store, the collector is capable of calculating additional values from the values received from a tag, for example absolute humidity and dew point
+# Valid values "raw", "extended", "whitelist", "blacklist":
+# raw       = Save only the raw values received from the tag. Ignores the storage.values.list property.
+# extended  = In addition to the above, calculate additional values such as absolute humidity, dew point, total acceleration and air density.
+#             Ignores the storage.values.list property. NOTE: the influxdb_legacy storage method does not support extended values
+# whitelist = Only the values given in the storage.values.list property are stored. (influxdb_legacy storage method not supported.)
+# blacklist = Only the values not given in the storage.values.list property are stored. (influxdb_legacy storage method not supported.)
 #storage.values=extended
-
+#storage.values.list = accelerationX,accelerationY,accelerationZ,accelerationTotal,accelerationAngleFromX,accelerationAngleFromY,accelerationAngleFromZ
 
 #
 # Advanced configuration - Change these only if you know what you are doing

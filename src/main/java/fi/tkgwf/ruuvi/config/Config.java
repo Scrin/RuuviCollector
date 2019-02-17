@@ -149,17 +149,21 @@ public abstract class Config {
     }
 
     private static Predicate<String> createInfluxDbFieldFilter() {
-        switch (storageValues) {
+        return createInfluxDbFieldFilter(storageValues, FILTER_INFLUXDB_FIELDS);
+    }
+
+    static Predicate<String> createInfluxDbFieldFilter(final String value, final Collection<String> list) {
+        switch (Optional.ofNullable(value).orElse("extended")) {
             case "raw":
                 return InfluxDBConverter.RAW_STORAGE_VALUES::contains;
             case "extended":
                 return s -> true;
             case "whitelist":
-                return FILTER_INFLUXDB_FIELDS::contains;
+                return list::contains;
             case "blacklist":
-                return s -> !FILTER_INFLUXDB_FIELDS.contains(s);
+                return s -> !list.contains(s);
             default:
-                LOG.warn("Unknown storage.values value: " + storageValues);
+                LOG.warn("Unknown storage.values value: " + value);
                 return s -> true;
         }
     }
@@ -204,8 +208,12 @@ public abstract class Config {
             .orElse(Collections.emptySet());
     }
 
-    private static Collection<? extends String> parseFilterInfluxDbFields(final Properties props) {
-        return Optional.ofNullable(props.getProperty("storage.values.list"))
+    private static Collection<String> parseFilterInfluxDbFields(final Properties props) {
+        return parseFilterInfluxDbFields(props.getProperty("storage.values.list"));
+    }
+
+    static Collection<String> parseFilterInfluxDbFields(final String list) {
+        return Optional.ofNullable(list)
             .map(value -> Arrays.stream(value.split(","))
                 .map(String::trim)
                 .collect(toSet()))
@@ -336,6 +344,11 @@ public abstract class Config {
         return influxDbFieldFilter;
     }
 
+    public static Predicate<String> getAllowedInfluxDbFieldsPredicate(String mac) {
+        return Optional.ofNullable(tagProperties.get(mac))
+            .map(TagProperties::getInfluxDbFieldFilter)
+            .orElse(s -> true);
+    }
     public static String getInfluxUrl() {
         return influxUrl;
     }

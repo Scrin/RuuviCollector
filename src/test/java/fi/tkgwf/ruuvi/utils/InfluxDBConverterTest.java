@@ -1,12 +1,16 @@
 package fi.tkgwf.ruuvi.utils;
 
 import fi.tkgwf.ruuvi.bean.RuuviMeasurement;
+import fi.tkgwf.ruuvi.config.Config;
 import org.influxdb.dto.Point;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Properties;
 import java.util.function.Predicate;
 
 import static java.util.Collections.emptySet;
@@ -14,6 +18,16 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class InfluxDBConverterTest {
+
+    @BeforeEach
+    void resetConfigBefore() {
+        Config.reload();
+    }
+
+    @AfterAll
+    static void resetConfigAfter() {
+        Config.reload();
+    }
 
     @Test
     void toInfluxShouldGiveExtendedValues() {
@@ -42,6 +56,30 @@ class InfluxDBConverterTest {
             "accelerationAngleFromX",
             "accelerationAngleFromY",
             "accelerationAngleFromZ");
+    }
+
+    @Test
+    void toInfluxShouldWorkCorrectlyWithPerTagSettings() {
+        final Properties props = new Properties();
+        props.put("tag.BBBBBBBBBBBB.storage.values", "blacklist");
+        props.put("tag.BBBBBBBBBBBB.storage.values.list", "accelerationX,accelerationY,accelerationZ");
+        props.put("tag.CCCCCCCCCCCC.storage.values", "whitelist");
+        props.put("tag.CCCCCCCCCCCC.storage.values.list", "temperature,humidity");
+        Config.readConfigFromProperties(props);
+
+        final RuuviMeasurement measurement = createMeasurement();
+        final Point point = InfluxDBConverter.toInflux(measurement);
+        assertPointContainsAllValues(point);
+
+        final RuuviMeasurement measurement2 = createMeasurement();
+        measurement2.mac = "BBBBBBBBBBBB";
+        final Point point2 = InfluxDBConverter.toInflux(measurement2);
+        assertPointContainsAllValuesBut(point2, "accelerationX", "accelerationY", "accelerationZ");
+
+        final RuuviMeasurement measurement3 = createMeasurement();
+        measurement3.mac = "CCCCCCCCCCCC";
+        final Point point3 = InfluxDBConverter.toInflux(measurement3);
+        assertPointContainsOnly(point3, "temperature", "humidity");
     }
 
     @Test
@@ -88,6 +126,16 @@ class InfluxDBConverterTest {
         assertPoint(point, shouldContain, shouldNotContain);
     }
 
+    private static void assertPointContainsOnly(final Point point, final String... values) {
+        final Collection<String> shouldContain = new ArrayList<>(Arrays.asList(values));
+        shouldContain.add("mac");
+        shouldContain.add("dataFormat");
+        shouldContain.add("time");
+        final Collection<String> shouldNotContain = new ArrayList<>(allValues());
+        shouldNotContain.removeIf(shouldContain::contains);
+        assertPoint(point, shouldContain, shouldNotContain);
+    }
+
     private static Collection<String> allValues() {
         return Arrays.asList("mac", "dataFormat", "time", "temperature", "humidity", "pressure",
             "accelerationX", "accelerationY", "accelerationZ", "batteryVoltage", "txPower", "movementCounter",
@@ -97,8 +145,8 @@ class InfluxDBConverterTest {
     }
 
     private static void assertPoint(final Point point, final Collection<String> shouldContain, final Collection<String> shouldNotContain) {
-        shouldContain.forEach(v -> assertTrue(point.toString().contains(v)));
-        shouldNotContain.forEach(v -> assertFalse(point.toString().contains(v)));
+        shouldContain.forEach(v -> assertTrue(point.toString().contains(v), v + " should be in the collection"));
+        shouldNotContain.forEach(v -> assertFalse(point.toString().contains(v), v + " should not be in the collection"));
     }
 
     private static RuuviMeasurement createMeasurement() {
