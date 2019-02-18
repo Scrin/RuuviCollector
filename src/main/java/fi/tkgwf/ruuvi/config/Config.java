@@ -347,8 +347,9 @@ public abstract class Config {
     public static Predicate<String> getAllowedInfluxDbFieldsPredicate(String mac) {
         return Optional.ofNullable(tagProperties.get(mac))
             .map(TagProperties::getInfluxDbFieldFilter)
-            .orElse(s -> true);
+            .orElse(influxDbFieldFilter);
     }
+
     public static String getInfluxUrl() {
         return influxUrl;
     }

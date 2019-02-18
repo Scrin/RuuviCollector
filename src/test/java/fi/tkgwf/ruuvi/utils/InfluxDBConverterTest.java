@@ -61,6 +61,8 @@ class InfluxDBConverterTest {
     @Test
     void toInfluxShouldWorkCorrectlyWithPerTagSettings() {
         final Properties props = new Properties();
+        props.put("storage.values", "whitelist");
+        props.put("storage.values.list", "pressure");
         props.put("tag.BBBBBBBBBBBB.storage.values", "blacklist");
         props.put("tag.BBBBBBBBBBBB.storage.values.list", "accelerationX,accelerationY,accelerationZ");
         props.put("tag.CCCCCCCCCCCC.storage.values", "whitelist");
@@ -69,7 +71,7 @@ class InfluxDBConverterTest {
 
         final RuuviMeasurement measurement = createMeasurement();
         final Point point = InfluxDBConverter.toInflux(measurement);
-        assertPointContainsAllValues(point);
+        assertPointContainsOnly(point, "pressure");
 
         final RuuviMeasurement measurement2 = createMeasurement();
         measurement2.mac = "BBBBBBBBBBBB";
