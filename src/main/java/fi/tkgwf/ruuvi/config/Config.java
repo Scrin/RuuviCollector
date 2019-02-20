@@ -94,6 +94,7 @@ public abstract class Config {
         measurementUpdateLimit = 9900;
         storageMethod = "influxdb";
         storageValues = "extended";
+        FILTER_INFLUXDB_FIELDS.clear();
         influxDbFieldFilter = (s) -> true;
         filterMode = (s) -> true;
         FILTER_MACS.clear();
