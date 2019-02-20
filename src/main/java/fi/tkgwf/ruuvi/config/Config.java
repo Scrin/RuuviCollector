@@ -147,6 +147,24 @@ public abstract class Config {
         defaultWithMotionSensitivityStrategyThreshold = parseDouble(props, "limitingStrategy.defaultWithMotionSensitivity.threshold", defaultWithMotionSensitivityStrategyThreshold);
         defaultWithMotionSensitivityStrategyNumberOfPreviousMeasurementsToKeep = parseInteger(props, "limitingStrategy.defaultWithMotionSensitivity.numberOfMeasurementsToKeep", defaultWithMotionSensitivityStrategyNumberOfPreviousMeasurementsToKeep);
         tagProperties = parseTagProperties(props);
+        validateConfig();
+    }
+
+    private static void validateConfig() {
+        if (FILTER_INFLUXDB_FIELDS.isEmpty()) {
+            switch (storageValues) {
+                case "whitelist":
+                    throw new IllegalStateException("You have selected no fields to be stored into the InfluxDB. " +
+                        "Please set the storage.values.list property or select another storage.values option. " +
+                        "See MEASUREMENTS.md for the available fields and ruuvi-collector.properties.example for " +
+                        "the possible values of the storage.values property.");
+                case "blacklist":
+                    LOG.warn("You have set storage.values=blacklist but left storage.values.list empty. " +
+                        "This is essentially the same as setting storage.values=extended. If this is intentional, " +
+                        "you may ignore this message.");
+                    break;
+            }
+        }
     }
 
     private static Predicate<String> createInfluxDbFieldFilter() {

@@ -13,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 class ConfigTest {
 
@@ -109,11 +110,17 @@ class ConfigTest {
     void testInfluxDbFieldFilter() {
         final Properties properties = new Properties();
         properties.put("storage.values", "whitelist");
-        Config.readConfigFromProperties(properties);
+        try {
+            Config.readConfigFromProperties(properties);
+            fail("There should have been an exception: storage.values.list is empty.");
+        } catch (final IllegalStateException expected) {
+            // This is good, the validation worked.
+        }
+        properties.put("storage.values.list", "x");
         Predicate<String> predicate = Config.getAllowedInfluxDbFieldsPredicate();
 
-        assertFalse(predicate.test("quux")); // No values in the whitelist
-        assertFalse(predicate.test("temperature")); // No values in the whitelist
+        assertFalse(predicate.test("quux")); // Not in the whitelist
+        assertFalse(predicate.test("temperature")); // Not in the whitelist
 
         properties.put("storage.values.list", "foo,bar,temperature,something");
         Config.readConfigFromProperties(properties);

@@ -57,8 +57,11 @@
 # blacklist = Only the values not given in the storage.values.list property are stored. (influxdb_legacy storage method not supported.)
 #storage.values=extended
 
-# Settings storage.values to "blacklist" and enabling the following would disable recording all acceleration readings, which could be useful in case your tag is stationary:
-#storage.values.list = accelerationX,accelerationY,accelerationZ,accelerationTotal,accelerationAngleFromX,accelerationAngleFromY,accelerationAngleFromZ
+# See MEASUREMENTS.md for all the field names that can be used with storage.values.list.
+# Note that leaving this list empty while setting storage.values=whitelist results in an exception: no sensor data
+# would be stored with this combination. Setting storage.values=blacklist and leaving this list empty only results
+# in a warning, as that is essentially just the same as setting storage.values=extended -- nothing is banned.
+#storage.values.list =
 
 #
 # Advanced configuration - Change these only if you know what you are doing
