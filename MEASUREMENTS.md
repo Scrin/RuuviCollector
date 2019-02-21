@@ -14,26 +14,31 @@ For maximum accuracy, the update interval should be configured to 0 to save ever
 
 ### Data format compatibility
 
-Note: Extended values are enabled by default but can be disabled if only actual values from the tag are needed.
+Note: Extended values are enabled by default but can be disabled by setting `storage.values=raw` if only actual values from the tag are needed.
+Alternatively, if you want more fine-grained control, you may set `storage.values` either to `whitelist` or `blacklist` and then set another 
+property, `storage.values.list`, to a list of fields to include or exclude, respectively.
+See [ruuvi-collector.properties.example](./ruuvi-collector.properties.example) for a practical example on how to disable 
+all fields related to acceleration in case your tag is stationary and recording acceleration readings would be pointless. 
+For the purposes of blacklisting or whitelisting the values, the table below displays the field names in the last column.
 
-| Type                            | Unit (saved)         | Data format 2 | Data format 3 | Data format 4 | Data format 5 |
-| ------------------------------- | -------------------- | ------------- | ------------- | ------------- | ------------- |
-| Temperature                     | Celsius              | **Yes**       | **Yes**       | **Yes**       | **Yes**       |
-| Relative humidity               | Percent (0-100)      | **Yes**       | **Yes**       | **Yes**       | **Yes**       |
-| Air pressure                    | Pascal               | **Yes**       | **Yes**       | **Yes**       | **Yes**       |
-| Acceleration (x, y ,z)          | Gravity of earth (g) | No            | **Yes**       | No            | **Yes**       |
-| Battery voltage                 | Volt                 | No            | **Yes**       | No            | **Yes**       |
-| TX power                        | dBm                  | No            | No            | No            | **Yes**       |
-| RSSI                            | dBm                  | **Yes** *(1)* |**Yes** *(1)*  | **Yes** *(1)* | **Yes** *(1)* |
-| Movement counter                | Number               | No            | No            | No            | **Yes**       |
-| Measurement sequence number     | Number               | No            | No            | No            | **Yes**       |
-| **Extended values, if enabled** |                      |               |               |               |               |
-| Total acceleration              | Gravity of earth (g) | No            | **Yes**       | No            | **Yes**       |
-| Absolute humidity               | g/m³                 | **Yes**       | **Yes**       | **Yes**       | **Yes**       |
-| Dew point                       | Celsius              | **Yes**       | **Yes**       | **Yes**       | **Yes**       |
-| Equilibrium vapor pressure      | Pascal               | **Yes**       | **Yes**       | **Yes**       | **Yes**       |
-| Air density                     | kg/m³                | **Yes**       | **Yes**       | **Yes**       | **Yes**       |
-| Acceleration angle from axes    | Degrees              | No            | **Yes**       | No            | **Yes**       |
+| Type                            | Unit (saved)         | Data format 2 | Data format 3 | Data format 4 | Data format 5 | Field name                                                             |
+| ------------------------------- | -------------------- | ------------- | ------------- | ------------- | ------------- | ---------------------------------------------------------------------- |
+| Temperature                     | Celsius              | **Yes**       | **Yes**       | **Yes**       | **Yes**       | temperature                                                            |
+| Relative humidity               | Percent (0-100)      | **Yes**       | **Yes**       | **Yes**       | **Yes**       | humidity                                                               |
+| Air pressure                    | Pascal               | **Yes**       | **Yes**       | **Yes**       | **Yes**       | pressure                                                               |
+| Acceleration (x, y ,z)          | Gravity of earth (g) | No            | **Yes**       | No            | **Yes**       | accelerationX, accelerationY, accelerationZ                            |
+| Battery voltage                 | Volt                 | No            | **Yes**       | No            | **Yes**       | batteryVoltage                                                         |
+| TX power                        | dBm                  | No            | No            | No            | **Yes**       | txPower                                                                |
+| RSSI                            | dBm                  | **Yes** *(1)* |**Yes** *(1)*  | **Yes** *(1)* | **Yes** *(1)* | rssi                                                                   |
+| Movement counter                | Number               | No            | No            | No            | **Yes**       | movementCounter                                                        |
+| Measurement sequence number     | Number               | No            | No            | No            | **Yes**       | measurementSequenceNumber                                              |
+| **Extended values, if enabled** |                      |               |               |               |               |                                                                        |
+| Total acceleration              | Gravity of earth (g) | No            | **Yes**       | No            | **Yes**       | accelerationTotal                                                      |
+| Absolute humidity               | g/m³                 | **Yes**       | **Yes**       | **Yes**       | **Yes**       | absoluteHumidity                                                       |
+| Dew point                       | Celsius              | **Yes**       | **Yes**       | **Yes**       | **Yes**       | dewPoint                                                               |
+| Equilibrium vapor pressure      | Pascal               | **Yes**       | **Yes**       | **Yes**       | **Yes**       | equilibriumVaporPressure                                               |
+| Air density                     | kg/m³                | **Yes**       | **Yes**       | **Yes**       | **Yes**       | airDensity                                                             |
+| Acceleration angle from axes    | Degrees              | No            | **Yes**       | No            | **Yes**       | accelerationAngleFromX, accelerationAngleFromY, accelerationAngleFromZ |
 
 *(1)* RSSI is the (relative) signal strength at the receiver, it is not dependent on tag firmware.
 
