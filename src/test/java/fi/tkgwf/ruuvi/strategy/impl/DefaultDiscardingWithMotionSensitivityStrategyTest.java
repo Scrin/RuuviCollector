@@ -1,12 +1,27 @@
 package fi.tkgwf.ruuvi.strategy.impl;
 
 import fi.tkgwf.ruuvi.bean.RuuviMeasurement;
+import fi.tkgwf.ruuvi.config.Config;
+import fi.tkgwf.ruuvi.config.ConfigTest;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DefaultDiscardingWithMotionSensitivityStrategyTest {
+
+    @BeforeEach
+    void resetConfigBefore() {
+        Config.reload(ConfigTest.configTestFileFinder());
+    }
+
+    @AfterAll
+    static void resetConfigAfter() {
+        Config.reload(ConfigTest.configTestFileFinder());
+    }
+
     @Test
     void testMotionSensitivity() {
         final DefaultDiscardingWithMotionSensitivityStrategy strategy = new DefaultDiscardingWithMotionSensitivityStrategy();

@@ -3,15 +3,28 @@ package fi.tkgwf.ruuvi.strategy.impl;
 import fi.tkgwf.ruuvi.TestFixture;
 import fi.tkgwf.ruuvi.bean.HCIData;
 import fi.tkgwf.ruuvi.bean.RuuviMeasurement;
+import fi.tkgwf.ruuvi.config.Config;
+import fi.tkgwf.ruuvi.config.ConfigTest;
 import fi.tkgwf.ruuvi.handler.impl.DataFormatV3;
 import fi.tkgwf.ruuvi.utils.HCIParser;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DiscardUntilEnoughTimeHasElapsedStrategyTest {
+
+    @BeforeEach
+    void resetConfigBefore() {
+        Config.reload(ConfigTest.configTestFileFinder());
+    }
+
+    @AfterAll
+    static void resetConfigAfter() {
+        Config.reload(ConfigTest.configTestFileFinder());
+    }
 
     @AfterAll
     static void restoreClock() {

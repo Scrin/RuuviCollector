@@ -2,6 +2,7 @@ package fi.tkgwf.ruuvi.utils;
 
 import fi.tkgwf.ruuvi.bean.RuuviMeasurement;
 import fi.tkgwf.ruuvi.config.Config;
+import fi.tkgwf.ruuvi.config.ConfigTest;
 import org.influxdb.dto.Point;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,12 +22,12 @@ class InfluxDBConverterTest {
 
     @BeforeEach
     void resetConfigBefore() {
-        Config.reload();
+        Config.reload(ConfigTest.configTestFileFinder());
     }
 
     @AfterAll
     static void resetConfigAfter() {
-        Config.reload();
+        Config.reload(ConfigTest.configTestFileFinder());
     }
 
     @Test
