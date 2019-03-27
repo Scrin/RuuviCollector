@@ -279,15 +279,16 @@ public abstract class Config {
     }
 
     private static File findConfigFiles(final String propertiesFileName) throws URISyntaxException {
-        File jarLocation = new File(Config.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getParentFile();
-        File[] configFiles = jarLocation.listFiles(f -> f.isFile() && f.getName().equals(propertiesFileName));
-        if (configFiles == null || configFiles.length == 0) {
+        final File jarLocation = new File(Config.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getParentFile();
+        Optional<File> configFile = findConfigFile(propertiesFileName, jarLocation);
+        if (!configFile.isPresent()) {
             // look for config files in the parent directory if none found in the current directory, this is useful during development when
             // RuuviCollector can be run from maven target directory directly while the config file sits in the project root
-            configFiles = jarLocation.getParentFile().listFiles(f -> f.isFile() && f.getName().equals(propertiesFileName));
-            if (configFiles == null || configFiles.length == 0) {
+            final File parentFile = jarLocation.getParentFile();
+            configFile = findConfigFile(propertiesFileName, parentFile);
+            if (!configFile.isPresent()) {
                 // Finally, let the class loader try to look for the config file resource:
-                configFiles = Optional.ofNullable(Config.class.getResource(String.format("/%s", propertiesFileName)))
+                configFile = Optional.ofNullable(Config.class.getResource(String.format("/%s", propertiesFileName)))
                         .map(url -> {
                             try {
                                 return url.toURI();
@@ -295,12 +296,16 @@ public abstract class Config {
                                 throw new RuntimeException(e);
                             }
                         })
-                        .map(File::new)
-                        .map(f -> new File[]{f})
-                        .orElse(null);
+                        .map(File::new);
             }
         }
-        return Optional.ofNullable(configFiles).map(f -> f[0]).orElse(null);
+        return configFile.orElse(null);
+    }
+
+    private static Optional<File> findConfigFile(String propertiesFileName, File parentFile) {
+        return Optional.ofNullable(parentFile.listFiles(f -> f.isFile() && f.getName().equals(propertiesFileName)))
+            .filter(configFiles -> configFiles.length > 0)
+            .map(configFiles -> configFiles[0]);
     }
 
     private static void readTagNames() {
