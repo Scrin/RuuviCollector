@@ -2,8 +2,10 @@ package fi.tkgwf.ruuvi;
 
 import fi.tkgwf.ruuvi.bean.RuuviMeasurement;
 import fi.tkgwf.ruuvi.config.Config;
+import fi.tkgwf.ruuvi.config.ConfigTest;
 import fi.tkgwf.ruuvi.db.DBConnection;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
@@ -19,8 +21,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MainTest {
 
+    @BeforeEach
+    void resetConfigBefore() {
+        Config.reload(ConfigTest.configTestFileFinder());
+    }
+
     @AfterAll
     static void restoreClock() {
+        Config.reload(ConfigTest.configTestFileFinder());
         TestFixture.setClockToMilliseconds(System::currentTimeMillis);
     }
 

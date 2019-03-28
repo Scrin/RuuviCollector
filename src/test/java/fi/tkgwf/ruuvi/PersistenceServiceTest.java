@@ -3,6 +3,7 @@ package fi.tkgwf.ruuvi;
 import fi.tkgwf.ruuvi.bean.HCIData;
 import fi.tkgwf.ruuvi.bean.RuuviMeasurement;
 import fi.tkgwf.ruuvi.config.Config;
+import fi.tkgwf.ruuvi.config.ConfigTest;
 import fi.tkgwf.ruuvi.handler.impl.DataFormatV3;
 import fi.tkgwf.ruuvi.strategy.LimitingStrategy;
 import fi.tkgwf.ruuvi.utils.HCIParser;
@@ -21,12 +22,12 @@ class PersistenceServiceTest {
 
     @BeforeEach
     void resetConfigBefore() {
-        Config.reload();
+        Config.reload(ConfigTest.configTestFileFinder());
     }
 
     @AfterAll
     static void resetConfigAfter() {
-        Config.reload();
+        Config.reload(ConfigTest.configTestFileFinder());
     }
 
     @Test

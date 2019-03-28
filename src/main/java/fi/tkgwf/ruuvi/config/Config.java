@@ -69,12 +69,18 @@ public abstract class Config {
     private static Double defaultWithMotionSensitivityStrategyThreshold;
     private static int defaultWithMotionSensitivityStrategyNumberOfPreviousMeasurementsToKeep;
     private static Map<String, TagProperties> tagProperties;
+    private static Function<String, File> configFileFinder;
 
     static {
         reload();
     }
 
     public static void reload() {
+        reload(defaultConfigFileFinder());
+    }
+
+    public static void reload(final Function<String, File> configFileFinder) {
+        Config.configFileFinder = configFileFinder;
         loadDefaults();
         readConfig();
         readTagNames();
@@ -111,14 +117,14 @@ public abstract class Config {
 
     private static void readConfig() {
         try {
-            final File configFile = findConfigFiles(RUUVI_COLLECTOR_PROPERTIES);
+            final File configFile = configFileFinder.apply(RUUVI_COLLECTOR_PROPERTIES);
             if (configFile != null) {
                 LOG.debug("Config: " + configFile);
                 Properties props = new Properties();
                 props.load(new FileInputStream(configFile));
                 readConfigFromProperties(props);
             }
-        } catch (URISyntaxException | IOException ex) {
+        } catch (IOException ex) {
             LOG.warn("Failed to read configuration, using default values...", ex);
         }
     }
@@ -278,34 +284,33 @@ public abstract class Config {
         return Optional.ofNullable(props.getProperty(key)).map(Boolean::parseBoolean).orElse(defaultValue);
     }
 
-    private static File findConfigFiles(final String propertiesFileName) throws URISyntaxException {
-        File jarLocation = new File(Config.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getParentFile();
-        File[] configFiles = jarLocation.listFiles(f -> f.isFile() && f.getName().equals(propertiesFileName));
-        if (configFiles == null || configFiles.length == 0) {
-            // look for config files in the parent directory if none found in the current directory, this is useful during development when
-            // RuuviCollector can be run from maven target directory directly while the config file sits in the project root
-            configFiles = jarLocation.getParentFile().listFiles(f -> f.isFile() && f.getName().equals(propertiesFileName));
-            if (configFiles == null || configFiles.length == 0) {
-                // Finally, let the class loader try to look for the config file resource:
-                configFiles = Optional.ofNullable(Config.class.getResource(String.format("/%s", propertiesFileName)))
-                        .map(url -> {
-                            try {
-                                return url.toURI();
-                            } catch (final URISyntaxException e) {
-                                throw new RuntimeException(e);
-                            }
-                        })
-                        .map(File::new)
-                        .map(f -> new File[]{f})
-                        .orElse(null);
+    private static Function<String, File> defaultConfigFileFinder() {
+        return propertiesFileName -> {
+            try {
+                final File jarLocation = new File(Config.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getParentFile();
+                Optional<File> configFile = findConfigFile(propertiesFileName, jarLocation);
+                if (!configFile.isPresent()) {
+                    // look for config files in the parent directory if none found in the current directory, this is useful during development when
+                    // RuuviCollector can be run from maven target directory directly while the config file sits in the project root
+                    final File parentFile = jarLocation.getParentFile();
+                    configFile = findConfigFile(propertiesFileName, parentFile);
+                }
+                return configFile.orElse(null);
+            } catch (URISyntaxException e) {
+                throw new RuntimeException(e);
             }
-        }
-        return Optional.ofNullable(configFiles).map(f -> f[0]).orElse(null);
+        };
+    }
+
+    private static Optional<File> findConfigFile(String propertiesFileName, File parentFile) {
+        return Optional.ofNullable(parentFile.listFiles(f -> f.isFile() && f.getName().equals(propertiesFileName)))
+            .filter(configFiles -> configFiles.length > 0)
+            .map(configFiles -> configFiles[0]);
     }
 
     private static void readTagNames() {
         try {
-            final File configFile = findConfigFiles(RUUVI_NAMES_PROPERTIES);
+            final File configFile = configFileFinder.apply(RUUVI_NAMES_PROPERTIES);
             if (configFile != null) {
                 LOG.debug("Tag names: " + configFile);
                 Properties props = new Properties();
@@ -319,7 +324,7 @@ public abstract class Config {
                     }
                 }
             }
-        } catch (URISyntaxException | IOException ex) {
+        } catch (IOException ex) {
             LOG.warn("Failed to read tag names", ex);
         }
     }
