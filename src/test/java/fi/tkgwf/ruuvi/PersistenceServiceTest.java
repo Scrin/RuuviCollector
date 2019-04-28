@@ -57,6 +57,8 @@ class PersistenceServiceTest {
         assertEquals(8, results.get(2).rssi.intValue());
         assertEquals(10, results.get(3).rssi.intValue());
         assertEquals(11, results.get(4).rssi.intValue());
+
+        service.close();
     }
 
     @Test
@@ -110,6 +112,8 @@ class PersistenceServiceTest {
         assertEquals(10, results.get(5).rssi.intValue());
         assertEquals(11, results.get(6).rssi.intValue());
         assertEquals(13, results.get(7).rssi.intValue());
+
+        service.close();
     }
 
     private RuuviMeasurement withAcceleration(final RuuviMeasurement measurement, double accelerationX) {

@@ -3,7 +3,6 @@ package fi.tkgwf.ruuvi.utils;
 import fi.tkgwf.ruuvi.bean.RuuviMeasurement;
 import fi.tkgwf.ruuvi.config.Config;
 import fi.tkgwf.ruuvi.db.DBConnection;
-import fi.tkgwf.ruuvi.db.InfluxDBConnection;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -278,7 +277,6 @@ public class InfluxDataMigrator {
                 int sourceIndex = -1;
                 int dataFormatIndex = -1;
                 int valueIndex = -1;
-                int axisIndex = -1;
                 for (int i = 0; i < columns.size(); i++) {
                     switch (columns.get(i)) {
                         case "time":
@@ -297,11 +295,10 @@ public class InfluxDataMigrator {
                             valueIndex = i;
                             break;
                         case "axis":
-                            axisIndex = i;
                             break;
                     }
                 }
-                for (List v : s.getValues()) {
+                for (List<Object> v : s.getValues()) {
                     LegacyMeasurement m = new LegacyMeasurement();
                     String timeString = safeGet(v, timeIndex);
                     if (timeString != null) {
@@ -322,7 +319,7 @@ public class InfluxDataMigrator {
             });
         }
 
-        private String safeGet(List l, int index) {
+        private String safeGet(List<Object> l, int index) {
             if (index == -1) {
                 return null;
             }

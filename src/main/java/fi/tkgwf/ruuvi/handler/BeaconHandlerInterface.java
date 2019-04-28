@@ -6,7 +6,7 @@ import fi.tkgwf.ruuvi.bean.RuuviMeasurement;
 /**
  * Creates {@link RuuviMeasurement} instances from raw dumps from hcidump.
  */
-public interface BeaconHandler {
+public interface BeaconHandlerInterface {
 
     /**
      * Handles a packet and creates a {@link RuuviMeasurement} if the handler

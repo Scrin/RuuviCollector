@@ -2,11 +2,8 @@ package fi.tkgwf.ruuvi;
 
 import fi.tkgwf.ruuvi.bean.HCIData;
 import fi.tkgwf.ruuvi.config.Config;
-import fi.tkgwf.ruuvi.handler.BeaconHandler;
-import fi.tkgwf.ruuvi.handler.impl.DataFormatV2;
-import fi.tkgwf.ruuvi.handler.impl.DataFormatV3;
-import fi.tkgwf.ruuvi.handler.impl.DataFormatV4;
-import fi.tkgwf.ruuvi.handler.impl.DataFormatV5;
+import fi.tkgwf.ruuvi.handler.BeaconHandlerInterface;
+import fi.tkgwf.ruuvi.handler.BeaconHandlers;
 import fi.tkgwf.ruuvi.utils.HCIParser;
 import fi.tkgwf.ruuvi.utils.InfluxDataMigrator;
 import fi.tkgwf.ruuvi.utils.MeasurementValueCalculator;
@@ -15,8 +12,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -25,14 +20,6 @@ public class Main {
 
     private static final Logger LOG = Logger.getLogger(Main.class);
 
-    private final List<BeaconHandler> beaconHandlers = new LinkedList<>();
-
-    private void initializeHandlers() {
-        beaconHandlers.add(new DataFormatV2());
-        beaconHandlers.add(new DataFormatV3());
-        beaconHandlers.add(new DataFormatV4());
-        beaconHandlers.add(new DataFormatV5());
-    }
 
     public static void main(String[] args) {
         if (args.length >= 1 && args[0].equalsIgnoreCase("migrate")) {
@@ -81,9 +68,6 @@ public class Main {
     }
 
     boolean run(final BufferedReader reader) {
-        if (beaconHandlers.isEmpty()) {
-            initializeHandlers();
-        }
         HCIParser parser = new HCIParser();
         boolean dataReceived = false;
         try (final PersistenceService persistenceService = new PersistenceService()) {
@@ -103,7 +87,8 @@ public class Main {
                     }
                     HCIData hciData = parser.readLine(line);
                     if (hciData != null) {
-                        beaconHandlers.stream()
+                        BeaconHandlers.INSTANCE.getHandlers()
+                                .stream()
                                 .filter(handler -> handler.canHandle(hciData))
                                 .map(handler -> handler.handle(hciData))
                                 .filter(Objects::nonNull)
@@ -113,7 +98,7 @@ public class Main {
                 } catch (Exception ex) {
                     LOG.warn("Uncaught exception while handling measurements from MAC address \"" + latestMAC + "\", if this repeats and this is not a Ruuvitag, consider blacklisting it", ex);
                     LOG.debug("Offending line: " + line);
-                    beaconHandlers.forEach(BeaconHandler::reset);
+                    BeaconHandlers.INSTANCE.getHandlers().forEach(BeaconHandlerInterface::reset);
                 }
             }
         } catch (IOException ex) {

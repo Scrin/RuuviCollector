@@ -3,9 +3,9 @@ package fi.tkgwf.ruuvi.handler.impl;
 import fi.tkgwf.ruuvi.bean.HCIData;
 import fi.tkgwf.ruuvi.bean.RuuviMeasurement;
 import fi.tkgwf.ruuvi.config.Config;
-import fi.tkgwf.ruuvi.handler.BeaconHandler;
+import fi.tkgwf.ruuvi.handler.BeaconHandlerInterface;
 
-public abstract class AbstractEddystoneURL implements BeaconHandler {
+public abstract class AbstractEddystoneURL implements BeaconHandlerInterface {
 
     private static final String RUUVI_BASE_URL = "ruu.vi/#";
 

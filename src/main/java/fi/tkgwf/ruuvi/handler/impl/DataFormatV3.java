@@ -3,12 +3,10 @@ package fi.tkgwf.ruuvi.handler.impl;
 import fi.tkgwf.ruuvi.bean.HCIData;
 import fi.tkgwf.ruuvi.bean.RuuviMeasurement;
 import fi.tkgwf.ruuvi.config.Config;
-import fi.tkgwf.ruuvi.handler.BeaconHandler;
+import fi.tkgwf.ruuvi.handler.BeaconHandlerInterface;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
-public class DataFormatV3 implements BeaconHandler {
+public class DataFormatV3 implements BeaconHandlerInterface {
 
     private final int[] RUUVI_COPANY_IDENTIFIER = {0x99, 0x04}; // 0x0499
 
