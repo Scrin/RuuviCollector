@@ -28,6 +28,7 @@ public class Main {
         } else {
             Main m = new Main();
             if (!m.run()) {
+                LOG.info("Unclean exit");
                 System.exit(1);
             }
         }
@@ -88,9 +89,14 @@ public class Main {
                     HCIData hciData = parser.readLine(line);
                     if (hciData != null) {
                         beaconHandler.handle(hciData).map(MeasurementValueCalculator::calculateAllValues).ifPresent(persistenceService::store);
+                        latestMAC = null; // "reset" the mac to null to avoid misleading MAC addresses when an error happens *after* successfully reading a full packet
                     }
                 } catch (Exception ex) {
-                    LOG.warn("Uncaught exception while handling measurements from MAC address \"" + latestMAC + "\", if this repeats and this is not a Ruuvitag, consider blacklisting it", ex);
+                    if (latestMAC != null) {
+                        LOG.warn("Uncaught exception while handling measurements from MAC address \"" + latestMAC + "\", if this repeats and this is not a Ruuvitag, try blacklisting it", ex);
+                    } else {
+                        LOG.warn("Uncaught exception while handling measurements, this is an unexpected event. Please report this to https://github.com/Scrin/RuuviCollector/issues and include this log", ex);
+                    }
                     LOG.debug("Offending line: " + line);
                 }
             }

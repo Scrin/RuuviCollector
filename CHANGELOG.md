@@ -1,5 +1,13 @@
 # Changelog
 
+### v0.2.4
+
+ - Significant amount of refactoring, this release may be a bit more unstable than usual
+ - Added "defaultWithMotionSensitivity" limiting strategy (see ruuvi-collector.properties.example for configuration details, thanks ZeroOne3010)
+ - Updated various dependencies and added [ruuvitag-common-java](https://github.com/Scrin/ruuvitag-common-java) as a dependency
+ - Added tests (thanks ZeroOne3010)
+ - Fixed a rare soft-crash when the raw hcidump line is invalid and cuts out in the middle of the MAC address
+
 ### v0.2.3
 
  - Added advanced configuration options for InfluxDB

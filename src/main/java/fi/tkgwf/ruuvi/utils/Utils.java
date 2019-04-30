@@ -47,8 +47,11 @@ public abstract class Utils {
         if (StringUtils.isBlank(line)) {
             return null;
         }
-        StringBuilder sb = new StringBuilder();
         String[] split = line.split(" ", 7); // 6 blocks plus remaining garbage
+        if (split.length < 6) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder();
         for (int i = 5; i >= 0; i--) {
             sb.append(split[i]);
         }
