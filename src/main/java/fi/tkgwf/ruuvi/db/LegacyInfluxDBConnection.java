@@ -1,6 +1,6 @@
 package fi.tkgwf.ruuvi.db;
 
-import fi.tkgwf.ruuvi.bean.RuuviMeasurement;
+import fi.tkgwf.ruuvi.bean.EnhancedRuuviMeasurement;
 import fi.tkgwf.ruuvi.config.Config;
 import fi.tkgwf.ruuvi.utils.InfluxDBConverter;
 import java.util.concurrent.TimeUnit;
@@ -20,7 +20,7 @@ public class LegacyInfluxDBConnection implements DBConnection {
     }
 
     @Override
-    public void save(RuuviMeasurement measurement) {
+    public void save(EnhancedRuuviMeasurement measurement) {
         BatchPoints points = InfluxDBConverter.toLegacyInflux(measurement);
         influxDB.write(points);
     }

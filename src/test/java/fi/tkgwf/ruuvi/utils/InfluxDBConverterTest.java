@@ -1,6 +1,6 @@
 package fi.tkgwf.ruuvi.utils;
 
-import fi.tkgwf.ruuvi.bean.RuuviMeasurement;
+import fi.tkgwf.ruuvi.bean.EnhancedRuuviMeasurement;
 import fi.tkgwf.ruuvi.config.Config;
 import fi.tkgwf.ruuvi.config.ConfigTest;
 import org.influxdb.dto.Point;
@@ -32,21 +32,21 @@ class InfluxDBConverterTest {
 
     @Test
     void toInfluxShouldGiveExtendedValues() {
-        final RuuviMeasurement measurement = createMeasurement();
+        final EnhancedRuuviMeasurement measurement = createMeasurement();
         final Point point = InfluxDBConverter.toInflux(measurement);
         assertPointContainsAllValues(point);
     }
 
     @Test
     void toInfluxTrueShouldGiveExtendedValues() {
-        final RuuviMeasurement measurement = createMeasurement();
+        final EnhancedRuuviMeasurement measurement = createMeasurement();
         final Point point = InfluxDBConverter.toInflux(measurement, true);
         assertPointContainsAllValues(point);
     }
 
     @Test
     void toInfluxFalseShouldGiveOnlyRawValues() {
-        final RuuviMeasurement measurement = createMeasurement();
+        final EnhancedRuuviMeasurement measurement = createMeasurement();
         final Point point = InfluxDBConverter.toInflux(measurement, false);
         assertPointContainsAllValuesBut(point,
             "accelerationTotal",
@@ -70,29 +70,29 @@ class InfluxDBConverterTest {
         props.put("tag.CCCCCCCCCCCC.storage.values.list", "temperature,humidity");
         Config.readConfigFromProperties(props);
 
-        final RuuviMeasurement measurement = createMeasurement();
+        final EnhancedRuuviMeasurement measurement = createMeasurement();
         final Point point = InfluxDBConverter.toInflux(measurement);
         assertPointContainsOnly(point, "pressure");
 
-        final RuuviMeasurement measurement2 = createMeasurement();
-        measurement2.mac = "BBBBBBBBBBBB";
+        final EnhancedRuuviMeasurement measurement2 = createMeasurement();
+        measurement2.setMac("BBBBBBBBBBBB");
         final Point point2 = InfluxDBConverter.toInflux(measurement2);
         assertPointContainsAllValuesBut(point2, "accelerationX", "accelerationY", "accelerationZ");
 
-        final RuuviMeasurement measurement3 = createMeasurement();
-        measurement3.mac = "CCCCCCCCCCCC";
+        final EnhancedRuuviMeasurement measurement3 = createMeasurement();
+        measurement3.setMac("CCCCCCCCCCCC");
         final Point point3 = InfluxDBConverter.toInflux(measurement3);
         assertPointContainsOnly(point3, "temperature", "humidity");
     }
 
     @Test
     void toInfluxWithAllowFunctionShouldIncludeRequiredValuesOnly() {
-        final RuuviMeasurement measurement = createMeasurement();
+        final EnhancedRuuviMeasurement measurement = createMeasurement();
         final Predicate<String> allowFunction = fieldName ->
             fieldName.equals("accelerationTotal")
                 || fieldName.equals("measurementSequenceNumber")
                 || fieldName.equals("txPower");
-        measurement.measurementSequenceNumber = null;
+        measurement.setMeasurementSequenceNumber(null);
         final Point point = InfluxDBConverter.toInflux(measurement, allowFunction);
         assertTrue(point.toString().contains("mac")); // cannot be disabled
         assertTrue(point.toString().contains("dataFormat")); // cannot be disabled
@@ -152,31 +152,31 @@ class InfluxDBConverterTest {
         shouldNotContain.forEach(v -> assertFalse(point.toString().contains(v), v + " should not be in the collection"));
     }
 
-    private static RuuviMeasurement createMeasurement() {
-        final RuuviMeasurement measurement = new RuuviMeasurement();
+    private static EnhancedRuuviMeasurement createMeasurement() {
+        final EnhancedRuuviMeasurement measurement = new EnhancedRuuviMeasurement();
         double d = 1d;
-        measurement.mac = "AAAAAAAAAAAA";
-        measurement.dataFormat = (int) d++;
-        measurement.time = (long) d++;
-        measurement.temperature = d++;
-        measurement.humidity = d++;
-        measurement.pressure = d++;
-        measurement.accelerationX = d++;
-        measurement.accelerationY = d++;
-        measurement.accelerationZ = d++;
-        measurement.batteryVoltage = d++;
-        measurement.txPower = (int) d++;
-        measurement.movementCounter = (int) d++;
-        measurement.measurementSequenceNumber = (int) d++;
-        measurement.rssi = (int) d++;
-        measurement.accelerationTotal = d++;
-        measurement.absoluteHumidity = d++;
-        measurement.dewPoint = d++;
-        measurement.equilibriumVaporPressure = d++;
-        measurement.airDensity = d++;
-        measurement.accelerationAngleFromX = d++;
-        measurement.accelerationAngleFromY = d++;
-        measurement.accelerationAngleFromZ = d;
+        measurement.setMac("AAAAAAAAAAAA");
+        measurement.setDataFormat((int) d++);
+        measurement.setTime((long) d++);
+        measurement.setTemperature(d++);
+        measurement.setHumidity(d++);
+        measurement.setPressure(d++);
+        measurement.setAccelerationX(d++);
+        measurement.setAccelerationY(d++);
+        measurement.setAccelerationZ(d++);
+        measurement.setBatteryVoltage(d++);
+        measurement.setTxPower((int) d++);
+        measurement.setMovementCounter((int) d++);
+        measurement.setMeasurementSequenceNumber((int) d++);
+        measurement.setRssi((int) d++);
+        measurement.setAccelerationTotal(d++);
+        measurement.setAbsoluteHumidity(d++);
+        measurement.setDewPoint(d++);
+        measurement.setEquilibriumVaporPressure(d++);
+        measurement.setAirDensity(d++);
+        measurement.setAccelerationAngleFromX(d++);
+        measurement.setAccelerationAngleFromY(d++);
+        measurement.setAccelerationAngleFromZ(d);
         return measurement;
     }
 }

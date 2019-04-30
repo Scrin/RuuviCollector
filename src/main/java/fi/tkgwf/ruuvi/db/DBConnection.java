@@ -1,6 +1,6 @@
 package fi.tkgwf.ruuvi.db;
 
-import fi.tkgwf.ruuvi.bean.RuuviMeasurement;
+import fi.tkgwf.ruuvi.bean.EnhancedRuuviMeasurement;
 
 public interface DBConnection {
 
@@ -9,7 +9,7 @@ public interface DBConnection {
      *
      * @param measurement
      */
-    void save(RuuviMeasurement measurement);
+    void save(EnhancedRuuviMeasurement measurement);
 
     /**
      * Closes the DB connection

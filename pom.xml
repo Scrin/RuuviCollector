@@ -10,7 +10,24 @@
         <jdk.version>1.8</jdk.version>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>ruuvitag-common-java-mvn-repo</id>
+            <url>https://raw.github.com/Scrin/ruuvitag-common-java/mvn-repo/</url>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
+        </repository>
+    </repositories>
+
     <dependencies>
+        <dependency>
+            <groupId>fi.tkgwf.ruuvi</groupId>
+            <artifactId>ruuvitag-common</artifactId>
+            <version>1.0.1</version>
+        </dependency>
+        
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>

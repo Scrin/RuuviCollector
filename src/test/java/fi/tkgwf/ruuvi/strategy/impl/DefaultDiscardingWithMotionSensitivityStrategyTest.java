@@ -1,6 +1,6 @@
 package fi.tkgwf.ruuvi.strategy.impl;
 
-import fi.tkgwf.ruuvi.bean.RuuviMeasurement;
+import fi.tkgwf.ruuvi.bean.EnhancedRuuviMeasurement;
 import fi.tkgwf.ruuvi.config.Config;
 import fi.tkgwf.ruuvi.config.ConfigTest;
 import org.junit.jupiter.api.AfterAll;
@@ -26,15 +26,15 @@ class DefaultDiscardingWithMotionSensitivityStrategyTest {
     void testMotionSensitivity() {
         final DefaultDiscardingWithMotionSensitivityStrategy strategy = new DefaultDiscardingWithMotionSensitivityStrategy();
 
-        final RuuviMeasurement withinInterval = new RuuviMeasurement();
-        withinInterval.accelerationX = 0.98d;
+        final EnhancedRuuviMeasurement withinInterval = new EnhancedRuuviMeasurement();
+        withinInterval.setAccelerationX(0.98d);
 
-        final RuuviMeasurement belowLower = new RuuviMeasurement();
-        belowLower.accelerationX = 0.5d;
+        final EnhancedRuuviMeasurement belowLower = new EnhancedRuuviMeasurement();
+        belowLower.setAccelerationX(0.5d);
 
 
-        final RuuviMeasurement aboveUpper = new RuuviMeasurement();
-        aboveUpper.accelerationX = 2.5d;
+        final EnhancedRuuviMeasurement aboveUpper = new EnhancedRuuviMeasurement();
+        aboveUpper.setAccelerationX(2.5d);
 
         assertTrue(strategy.apply(withinInterval).isPresent()); // Because no previous measurements
         assertFalse(strategy.apply(withinInterval).isPresent()); // Because of recent measurement

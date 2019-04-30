@@ -1,6 +1,6 @@
 package fi.tkgwf.ruuvi.strategy.impl;
 
-import fi.tkgwf.ruuvi.bean.RuuviMeasurement;
+import fi.tkgwf.ruuvi.bean.EnhancedRuuviMeasurement;
 import fi.tkgwf.ruuvi.config.Config;
 import fi.tkgwf.ruuvi.strategy.LimitingStrategy;
 
@@ -26,33 +26,33 @@ public class DefaultDiscardingWithMotionSensitivityStrategy implements LimitingS
     private final DiscardUntilEnoughTimeHasElapsedStrategy defaultStrategy = new DiscardUntilEnoughTimeHasElapsedStrategy();
 
     private final Double threshold = Config.getDefaultWithMotionSensitivityStrategyThreshold();
-    private final Map<String, List<RuuviMeasurement>> previousMeasurementsPerMac = new HashMap<>();
+    private final Map<String, List<EnhancedRuuviMeasurement>> previousMeasurementsPerMac = new HashMap<>();
     private final Map<String, Boolean> previousOutsideOfRangePerMac = new HashMap<>();
 
     @Override
-    public Optional<RuuviMeasurement> apply(final RuuviMeasurement measurement) {
-        final List<RuuviMeasurement> previousMeasurements = previousMeasurementsPerMac.getOrDefault(measurement.mac, new LinkedList<>());
+    public Optional<EnhancedRuuviMeasurement> apply(final EnhancedRuuviMeasurement measurement) {
+        final List<EnhancedRuuviMeasurement> previousMeasurements = previousMeasurementsPerMac.getOrDefault(measurement.getMac(), new LinkedList<>());
         previousMeasurements.add(measurement);
         if (previousMeasurements.size() > Config.getDefaultWithMotionSensitivityStrategyNumberOfPreviousMeasurementsToKeep()) {
             previousMeasurements.remove(0);
         }
-        previousMeasurementsPerMac.put(measurement.mac, previousMeasurements);
+        previousMeasurementsPerMac.put(measurement.getMac(), previousMeasurements);
 
         // Always apply the default strategy to keep the timestamps updated there:
-        Optional<RuuviMeasurement> result = defaultStrategy.apply(measurement);
+        Optional<EnhancedRuuviMeasurement> result = defaultStrategy.apply(measurement);
 
         // Apply the motion sensing strategy only if the base strategy says "no":
         if (!result.isPresent() && previousMeasurements.size() > 1) {
-            final RuuviMeasurement previous = previousMeasurements.get(previousMeasurements.size() - 2);
-            if (isOutsideThreshold(measurement.accelerationX, previous.accelerationX)
-                || isOutsideThreshold(measurement.accelerationY, previous.accelerationY)
-                || isOutsideThreshold(measurement.accelerationZ, previous.accelerationZ)) {
+            final EnhancedRuuviMeasurement previous = previousMeasurements.get(previousMeasurements.size() - 2);
+            if (isOutsideThreshold(measurement.getAccelerationX(), previous.getAccelerationX())
+                || isOutsideThreshold(measurement.getAccelerationY(), previous.getAccelerationY())
+                || isOutsideThreshold(measurement.getAccelerationZ(), previous.getAccelerationZ())) {
                 result = Optional.of(measurement);
-                previousOutsideOfRangePerMac.put(measurement.mac, true);
-            } else if (previousOutsideOfRangePerMac.getOrDefault(measurement.mac, false)) {
+                previousOutsideOfRangePerMac.put(measurement.getMac(), true);
+            } else if (previousOutsideOfRangePerMac.getOrDefault(measurement.getMac(), false)) {
                 // Reset the measurements: store one more event after the values have returned to within the threshold
                 result = Optional.of(measurement);
-                previousOutsideOfRangePerMac.put(measurement.mac, false);
+                previousOutsideOfRangePerMac.put(measurement.getMac(), false);
             }
         }
 

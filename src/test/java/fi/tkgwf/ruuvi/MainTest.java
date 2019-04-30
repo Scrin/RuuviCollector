@@ -1,6 +1,6 @@
 package fi.tkgwf.ruuvi;
 
-import fi.tkgwf.ruuvi.bean.RuuviMeasurement;
+import fi.tkgwf.ruuvi.bean.EnhancedRuuviMeasurement;
 import fi.tkgwf.ruuvi.config.Config;
 import fi.tkgwf.ruuvi.config.ConfigTest;
 import fi.tkgwf.ruuvi.db.DBConnection;
@@ -66,9 +66,9 @@ class MainTest {
 
         final MockConnection mockConnection = (MockConnection) Config.getDBConnection();
         assertEquals(3, mockConnection.getMeasurements().size());
-        assertEquals(1, mockConnection.getMeasurements().get(0).rssi.intValue());
-        assertEquals(3, mockConnection.getMeasurements().get(1).rssi.intValue());
-        assertEquals(4, mockConnection.getMeasurements().get(2).rssi.intValue());
+        assertEquals(1, mockConnection.getMeasurements().get(0).getRssi().intValue());
+        assertEquals(3, mockConnection.getMeasurements().get(1).getRssi().intValue());
+        assertEquals(4, mockConnection.getMeasurements().get(2).getRssi().intValue());
         assertTrue(mockConnection.isCloseCalled());
     }
 
@@ -79,11 +79,11 @@ class MainTest {
 
     public static class MockConnection implements DBConnection {
 
-        private final ArrayList<RuuviMeasurement> measurements = new ArrayList<>();
+        private final ArrayList<EnhancedRuuviMeasurement> measurements = new ArrayList<>();
         private boolean closeCalled = false;
 
         @Override
-        public void save(final RuuviMeasurement measurement) {
+        public void save(final EnhancedRuuviMeasurement measurement) {
             this.measurements.add(measurement);
         }
 
@@ -92,7 +92,7 @@ class MainTest {
             this.closeCalled = true;
         }
 
-        List<RuuviMeasurement> getMeasurements() {
+        List<EnhancedRuuviMeasurement> getMeasurements() {
             return measurements;
         }
 

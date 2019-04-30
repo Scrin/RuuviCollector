@@ -1,6 +1,6 @@
 package fi.tkgwf.ruuvi.strategy.impl;
 
-import fi.tkgwf.ruuvi.bean.RuuviMeasurement;
+import fi.tkgwf.ruuvi.bean.EnhancedRuuviMeasurement;
 import fi.tkgwf.ruuvi.config.Config;
 import fi.tkgwf.ruuvi.strategy.LimitingStrategy;
 
@@ -21,8 +21,8 @@ public class DiscardUntilEnoughTimeHasElapsedStrategy implements LimitingStrateg
     private final long updateLimit = Config.getMeasurementUpdateLimit();
 
     @Override
-    public Optional<RuuviMeasurement> apply(final RuuviMeasurement measurement) {
-        if (!shouldUpdate(measurement.mac)) {
+    public Optional<EnhancedRuuviMeasurement> apply(final EnhancedRuuviMeasurement measurement) {
+        if (!shouldUpdate(measurement.getMac())) {
             return Optional.empty();
         }
         return Optional.of(measurement);

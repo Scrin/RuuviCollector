@@ -1,25 +1,25 @@
 package fi.tkgwf.ruuvi.utils;
 
-import fi.tkgwf.ruuvi.bean.RuuviMeasurement;
+import fi.tkgwf.ruuvi.bean.EnhancedRuuviMeasurement;
 
 public class MeasurementValueCalculator {
 
     /**
-     * Calculates and populates values that can be calculated based on other
-     * values, such as total acceleration and absolute humidity
+     * Calculates values that can be calculated based on other values, such as
+     * total acceleration and absolute humidity
      *
-     * @param measurement the measurement to populate
-     * @return the supplied measurement, for convenient use in streams
+     * @param measurement the measurement
+     * @return The supplied Measurement
      */
-    public static RuuviMeasurement calculateAllValues(RuuviMeasurement measurement) {
-        measurement.accelerationTotal = totalAcceleration(measurement.accelerationX, measurement.accelerationY, measurement.accelerationZ);
-        measurement.absoluteHumidity = absoluteHumidity(measurement.temperature, measurement.humidity);
-        measurement.dewPoint = dewPoint(measurement.temperature, measurement.humidity);
-        measurement.equilibriumVaporPressure = equilibriumVaporPressure(measurement.temperature);
-        measurement.airDensity = airDensity(measurement.temperature, measurement.humidity, measurement.pressure);
-        measurement.accelerationAngleFromX = angleBetweenVectorComponentAndAxis(measurement.accelerationX, measurement.accelerationTotal);
-        measurement.accelerationAngleFromY = angleBetweenVectorComponentAndAxis(measurement.accelerationY, measurement.accelerationTotal);
-        measurement.accelerationAngleFromZ = angleBetweenVectorComponentAndAxis(measurement.accelerationZ, measurement.accelerationTotal);
+    public static EnhancedRuuviMeasurement calculateAllValues(EnhancedRuuviMeasurement measurement) {
+        measurement.setAbsoluteHumidity(absoluteHumidity(measurement.getTemperature(), measurement.getHumidity()));
+        measurement.setDewPoint(dewPoint(measurement.getTemperature(), measurement.getHumidity()));
+        measurement.setEquilibriumVaporPressure(equilibriumVaporPressure(measurement.getTemperature()));
+        measurement.setAirDensity(airDensity(measurement.getTemperature(), measurement.getHumidity(), measurement.getPressure()));
+        measurement.setAccelerationTotal(totalAcceleration(measurement.getAccelerationX(), measurement.getAccelerationY(), measurement.getAccelerationZ()));
+        measurement.setAccelerationAngleFromX(angleBetweenVectorComponentAndAxis(measurement.getAccelerationX(), measurement.getAccelerationTotal()));
+        measurement.setAccelerationAngleFromY(angleBetweenVectorComponentAndAxis(measurement.getAccelerationY(), measurement.getAccelerationTotal()));
+        measurement.setAccelerationAngleFromZ(angleBetweenVectorComponentAndAxis(measurement.getAccelerationZ(), measurement.getAccelerationTotal()));
         return measurement;
     }
 

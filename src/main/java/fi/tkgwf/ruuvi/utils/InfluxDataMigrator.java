@@ -1,6 +1,6 @@
 package fi.tkgwf.ruuvi.utils;
 
-import fi.tkgwf.ruuvi.bean.RuuviMeasurement;
+import fi.tkgwf.ruuvi.bean.EnhancedRuuviMeasurement;
 import fi.tkgwf.ruuvi.config.Config;
 import fi.tkgwf.ruuvi.db.DBConnection;
 import fi.tkgwf.ruuvi.db.InfluxDBConnection;
@@ -140,20 +140,20 @@ public class InfluxDataMigrator {
                 LegacyMeasurement battery = find("battery", currentMac, currentTime);
                 LegacyMeasurement rssi = find("rssi", currentMac, currentTime);
 
-                RuuviMeasurement m = new RuuviMeasurement();
-                m.time = temperature.time;
-                m.mac = currentMac;
-                m.dataFormat = temperature.dataFormat != null ? Integer.valueOf(temperature.dataFormat) : null;
-                m.temperature = temperature.value;
-                m.humidity = humidity.value;
-                m.pressure = pressure.value;
+                EnhancedRuuviMeasurement m = new EnhancedRuuviMeasurement();
+                m.setTime(temperature.time);
+                m.setMac(currentMac);
+                m.setDataFormat(temperature.dataFormat != null ? Integer.valueOf(temperature.dataFormat) : null);
+                m.setTemperature(temperature.value);
+                m.setHumidity(humidity.value);
+                m.setPressure(pressure.value);
                 if (accelerationX.value != null && accelerationY.value != null && accelerationZ.value != null) {
-                    m.accelerationX = accelerationX.value;
-                    m.accelerationY = accelerationY.value;
-                    m.accelerationZ = accelerationZ.value;
+                    m.setAccelerationX(accelerationX.value);
+                    m.setAccelerationY(accelerationY.value);
+                    m.setAccelerationZ(accelerationZ.value);
                 }
-                m.batteryVoltage = battery.value;
-                m.rssi = rssi.value != null ? rssi.value.intValue() : null;
+                m.setBatteryVoltage(battery.value);
+                m.setRssi(rssi.value != null ? rssi.value.intValue() : null);
 
                 MeasurementValueCalculator.calculateAllValues(m);
                 db.save(m);

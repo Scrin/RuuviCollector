@@ -1,21 +1,21 @@
-package fi.tkgwf.ruuvi;
+package fi.tkgwf.ruuvi.service;
 
-import fi.tkgwf.ruuvi.bean.RuuviMeasurement;
+import fi.tkgwf.ruuvi.bean.EnhancedRuuviMeasurement;
 import fi.tkgwf.ruuvi.config.Config;
 import fi.tkgwf.ruuvi.db.DBConnection;
 import fi.tkgwf.ruuvi.strategy.LimitingStrategy;
 
 import java.util.Optional;
 
-class PersistenceService implements AutoCloseable {
+public class PersistenceService implements AutoCloseable {
     private final DBConnection db;
     private final LimitingStrategy limitingStrategy;
 
-    PersistenceService() {
+    public PersistenceService() {
         this(Config.getDBConnection(), Config.getLimitingStrategy());
     }
 
-    PersistenceService(final DBConnection db, final LimitingStrategy strategy) {
+    public PersistenceService(final DBConnection db, final LimitingStrategy strategy) {
         this.db = db;
         this.limitingStrategy = strategy;
     }
@@ -25,12 +25,11 @@ class PersistenceService implements AutoCloseable {
         db.close();
     }
 
-    void store(final RuuviMeasurement measurement) {
-        Optional.ofNullable(measurement.mac)
+    public void store(final EnhancedRuuviMeasurement measurement) {
+        Optional.ofNullable(measurement.getMac())
             .map(Config::getLimitingStrategy)
             .orElse(limitingStrategy)
             .apply(measurement)
             .ifPresent(db::save);
     }
-
 }
