@@ -71,13 +71,23 @@ public class Main {
     boolean run(final BufferedReader reader) {
         HCIParser parser = new HCIParser();
         boolean dataReceived = false;
+        boolean healthy = false;
         try (final PersistenceService persistenceService = new PersistenceService()) {
             String line, latestMAC = null;
             while ((line = reader.readLine()) != null) {
+                if (line.contains("device: disconnected")) {
+                    LOG.error(line + ": Either the bluetooth device was externally disabled or physically disconnected");
+                    healthy = false;
+                }
+                if (line.contains("No such device")) {
+                    LOG.error(line + ": Check that your bluetooth adapter is enabled and working properly");
+                    healthy = false;
+                }
                 if (!dataReceived) {
                     if (line.startsWith("> ")) {
                         LOG.info("Successfully reading data from hcidump");
                         dataReceived = true;
+                        healthy = true;
                     } else {
                         continue; // skip the unnecessary garbage at beginning containing hcidump version and other junk print
                     }
@@ -90,6 +100,7 @@ public class Main {
                     if (hciData != null) {
                         beaconHandler.handle(hciData).map(MeasurementValueCalculator::calculateAllValues).ifPresent(persistenceService::store);
                         latestMAC = null; // "reset" the mac to null to avoid misleading MAC addresses when an error happens *after* successfully reading a full packet
+                        healthy = true;
                     }
                 } catch (Exception ex) {
                     if (latestMAC != null) {
@@ -104,6 +115,6 @@ public class Main {
             LOG.error("Uncaught exception while reading measurements", ex);
             return false;
         }
-        return true;
+        return healthy;
     }
 }
