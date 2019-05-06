@@ -33,7 +33,8 @@ public class Main {
             }
         }
         LOG.info("Clean exit");
-        System.exit(0); // due to a bug in the InfluxDB library, we have to force the exit as a workaround. See: https://github.com/influxdata/influxdb-java/issues/359
+        System.exit(0); // due to a bug in the InfluxDB library, we have to force the exit as a
+                        // workaround. See: https://github.com/influxdata/influxdb-java/issues/359
     }
 
     private BufferedReader startHciListeners() throws IOException {
@@ -64,7 +65,8 @@ public class Main {
             LOG.error("Failed to start hci processes", ex);
             return false;
         }
-        LOG.info("BLE listener started successfully, waiting for data... \nIf you don't get any data, check that you are able to run 'hcitool lescan' and 'hcidump --raw' without issues");
+        LOG.info("BLE listener started successfully, waiting for data... \n " +
+                "If you don't get any data, check that you are able to run 'hcitool lescan' and 'hcidump --raw' without issues");
         return run(reader);
     }
 
@@ -93,14 +95,18 @@ public class Main {
                     }
                 }
                 try {
-                    if (line.startsWith("> ") && line.length() > 23) {
+                    //Read in MAC address from first line
+                    if (Utils.hasMacAddress(line)) {
                         latestMAC = Utils.getMacFromLine(line.substring(23));
                     }
-                    HCIData hciData = parser.readLine(line);
-                    if (hciData != null) {
-                        beaconHandler.handle(hciData).map(MeasurementValueCalculator::calculateAllValues).ifPresent(persistenceService::store);
-                        latestMAC = null; // "reset" the mac to null to avoid misleading MAC addresses when an error happens *after* successfully reading a full packet
-                        healthy = true;
+                    //Apply Mac Address Filtering
+                    if (Config.isAllowedMAC(latestMAC)) {
+                        HCIData hciData = parser.readLine(line);
+                        if (hciData != null) {
+                            beaconHandler.handle(hciData).map(MeasurementValueCalculator::calculateAllValues).ifPresent(persistenceService::store);
+                            latestMAC = null; // "reset" the mac to null to avoid misleading MAC addresses when an error happens *after* successfully reading a full packet
+                            healthy = true;
+                        }
                     }
                 } catch (Exception ex) {
                     if (latestMAC != null) {
