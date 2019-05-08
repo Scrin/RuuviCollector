@@ -16,5 +16,6 @@ There are no ultimately strict code conventions, but try to follow the existing 
 ## Commit conventions
 
 - Use descriptive commit messages. Good examples: "Fix crash in parsing the config" or "Add support for ...". Bad examples: "Fixes", "New feature".
+- Write "clean" and easy to read commit messages. Good example: "Add support for custom filtering strategies. Resolves #123" Bad example: "aded support for custom filtering closes issue#123"
 - Don't pack too large amount of different changes in single commits, and don't split single features into multiple commits for no reason
 - Avoid pointless "fix typo" or "pr fixes" commits bloating the history, rather consider using [amend](https://git-scm.com/docs/git-commit#Documentation/git-commit.txt---amend) or [squash](https://stackoverflow.com/questions/5189560/squash-my-last-x-commits-together-using-git) when doing corrections to commits you just did, before they are merged
