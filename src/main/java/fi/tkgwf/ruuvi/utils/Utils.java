@@ -1,7 +1,5 @@
 package fi.tkgwf.ruuvi.utils;
 
-import org.apache.commons.lang3.StringUtils;
-
 public abstract class Utils {
 
     /**
@@ -36,24 +34,36 @@ public abstract class Utils {
     }
 
     /**
-     * Gets a MAC address from a space-separated hex string, starting after the
-     * prefix length
-     *
+     * 
+     * Use to read line from hcidump and confirm if Mac address should be present
+     * 
      * @param line a space separated string of hex, first six decimals are
      * assumed to be part of the MAC address, rest of the line is discarded
+     * @return true if Mac address should be found, false if Mac address should not be present
+     * 
+     */
+    public static boolean hasMacAddress(String line) {
+        return line != null 
+            && line.startsWith("> ") 
+            && line.trim().length() > 37; //
+    }
+
+    /**
+     * Gets a MAC address from a space-separated hex string
+     * 
+     *
+     * @param line a space separated string of hex, this string is checked by  {@link #hasMacAddress(String)} 
      * @return the MAC address, without spaces
      */
     public static String getMacFromLine(String line) {
-        if (StringUtils.isBlank(line)) {
+        if (!hasMacAddress(line)) {
             return null;
         }
-        String[] split = line.split(" ", 7); // 6 blocks plus remaining garbage
-        if (split.length < 6) {
-            return null;
-        }
+
+        String[] terms = line.split (" ");
         StringBuilder sb = new StringBuilder();
-        for (int i = 5; i >= 0; i--) {
-            sb.append(split[i]);
+        for (int i = 13; i >= 8; i--) {
+            sb.append(terms[i]);
         }
         return sb.toString();
     }

@@ -419,7 +419,7 @@ public abstract class Config {
     }
 
     public static boolean isAllowedMAC(String mac) {
-        return filterMode.test(mac);
+        return mac != null && filterMode.test(mac);
     }
 
     public static String[] getScanCommand() {

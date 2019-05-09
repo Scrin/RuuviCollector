@@ -86,6 +86,7 @@ public class ConfigTest {
 
     @Test
     void testOverriddenMacFilterList() {
+        assertFalse(Config.isAllowedMAC(null));
         assertFalse(Config.isAllowedMAC("ABCDEF012345"));
         assertFalse(Config.isAllowedMAC("F1E2D3C4B5A6"));
         assertTrue(Config.isAllowedMAC("123000000456"));
