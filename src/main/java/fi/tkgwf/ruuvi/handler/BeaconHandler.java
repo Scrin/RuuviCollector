@@ -27,9 +27,9 @@ public class BeaconHandler {
         HCIData.Report.AdvertisementData adData = hciData.findAdvertisementDataByType(0xFF); // Manufacturer-specific data, raw dataformats
         if (adData == null) {
             adData = hciData.findAdvertisementDataByType(0x16); // Eddystone url
-        }
-        if (adData == null || !Config.isAllowedMAC(hciData.mac)) {
-            return Optional.empty();
+            if (adData == null) {
+                return null;
+            }
         }
         RuuviMeasurement measurement = parser.parse(adData.dataBytes());
         if (measurement == null) {
