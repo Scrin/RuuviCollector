@@ -55,7 +55,7 @@ public abstract class Config {
     private static int influxBatchMaxTimeMs;
     private static long measurementUpdateLimit;
     private static String storageMethod;
-    private static String storageValues;
+    private static StorageValuesEnum storageValues;
     private static final Set<String> FILTER_INFLUXDB_FIELDS = new HashSet<>();
     private static Predicate<String> influxDbFieldFilter;
     private static Predicate<String> filterMode;
@@ -84,6 +84,7 @@ public abstract class Config {
         loadDefaults();
         readConfig();
         readTagNames();
+        validateConfig();
     }
 
     private static void loadDefaults() {
@@ -99,7 +100,7 @@ public abstract class Config {
         influxBatchMaxTimeMs = 100;
         measurementUpdateLimit = 9900;
         storageMethod = "influxdb";
-        storageValues = "extended";
+        storageValues = StorageValuesEnum.EXTENDED;
         FILTER_INFLUXDB_FIELDS.clear();
         influxDbFieldFilter = (s) -> true;
         filterMode = (s) -> true;
@@ -137,7 +138,8 @@ public abstract class Config {
         influxPassword = props.getProperty("influxPassword", influxPassword);
         measurementUpdateLimit = parseLong(props, "measurementUpdateLimit", measurementUpdateLimit);
         storageMethod = props.getProperty("storage.method", storageMethod);
-        storageValues = props.getProperty("storage.values", storageValues);
+        String storageValueProp = props.getProperty("storage.values", storageValues.getMethod());
+        storageValues = StorageValuesEnum.resolve(storageValueProp);
         FILTER_INFLUXDB_FIELDS.addAll(parseFilterInfluxDbFields(props));
         influxDbFieldFilter = createInfluxDbFieldFilter();
         filterMode = parseFilterMode(props);
@@ -153,23 +155,30 @@ public abstract class Config {
         defaultWithMotionSensitivityStrategyThreshold = parseDouble(props, "limitingStrategy.defaultWithMotionSensitivity.threshold", defaultWithMotionSensitivityStrategyThreshold);
         defaultWithMotionSensitivityStrategyNumberOfPreviousMeasurementsToKeep = parseInteger(props, "limitingStrategy.defaultWithMotionSensitivity.numberOfMeasurementsToKeep", defaultWithMotionSensitivityStrategyNumberOfPreviousMeasurementsToKeep);
         tagProperties = parseTagProperties(props);
-        validateConfig();
     }
 
-    private static void validateConfig() {
+    protected static void validateConfig() {
         if (FILTER_INFLUXDB_FIELDS.isEmpty()) {
             switch (storageValues) {
-                case "whitelist":
+                case WHITELIST:
                     throw new IllegalStateException("You have selected no fields to be stored into the InfluxDB. " +
                         "Please set the storage.values.list property or select another storage.values option. " +
                         "See MEASUREMENTS.md for the available fields and ruuvi-collector.properties.example for " +
                         "the possible values of the storage.values property.");
-                case "blacklist":
+                case BLACKLIST:
                     LOG.warn("You have set storage.values=blacklist but left storage.values.list empty. " +
                         "This is essentially the same as setting storage.values=extended. If this is intentional, " +
                         "you may ignore this message.");
                     break;
+                default: 
             }
+        } 
+        if (StorageValuesEnum.NAMED == storageValues 
+            && TAG_NAMES.isEmpty()) {
+                throw new IllegalStateException("You have selected storage.value=named but ruuvi-names.properties is empty. " +
+                    "Please populate ruuvi-names.properties or select another storage.value option. " +
+                    "See MEASUREMENTS.md for the available fields and ruuvi-collector.properties.example for " +
+                    "the possible values of the storage.values property. See ruuvi-names.properties.example for possible values.");
         }
     }
 
@@ -177,16 +186,18 @@ public abstract class Config {
         return createInfluxDbFieldFilter(storageValues, FILTER_INFLUXDB_FIELDS);
     }
 
-    static Predicate<String> createInfluxDbFieldFilter(final String value, final Collection<String> list) {
-        switch (Optional.ofNullable(value).orElse("extended")) {
-            case "raw":
+    static Predicate<String> createInfluxDbFieldFilter(final StorageValuesEnum value, final Collection<String> list) {
+        switch (Optional.ofNullable(value).orElse(StorageValuesEnum.EXTENDED)) {
+            case RAW:
                 return InfluxDBConverter.RAW_STORAGE_VALUES::contains;
-            case "extended":
+            case EXTENDED:
                 return s -> true;
-            case "whitelist":
+            case WHITELIST:
                 return list::contains;
-            case "blacklist":
+            case BLACKLIST:
                 return s -> !list.contains(s);
+            case NAMED:
+                return TAG_NAMES.keySet()::contains;
             default:
                 LOG.warn("Unknown storage.values value: " + value);
                 return s -> true;
@@ -360,7 +371,7 @@ public abstract class Config {
      * @return The value of the storage.values configuration property.
      */
     @Deprecated
-    public static String getStorageValues() {
+    public static StorageValuesEnum getStorageValues() {
         return storageValues;
     }
 

@@ -8,6 +8,9 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.net.URISyntaxException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Function;
@@ -125,11 +128,31 @@ public class ConfigTest {
     }
 
     @Test
+    void testNamedStorageValue() {
+        final Properties properties = new Properties();
+        properties.put("storage.values", "named");
+        try {
+            Config.readConfigFromProperties(properties);
+            Config.validateConfig();
+        } catch (final IllegalStateException expected) {
+            fail("There should have been an exception: ruuvi-names.properties is empty.");
+        }
+    }
+
+    @Test
+    void testNamedStoragePrecidate() {
+        Predicate<String> result = Config.createInfluxDbFieldFilter(StorageValuesEnum.NAMED, Collections.emptyList());
+        assertFalse(result.test("56EF34CD12AB"));
+        assertTrue(result.test("AB12CD34EF56"));
+    }
+
+    @Test
     void testInfluxDbFieldFilter() {
         final Properties properties = new Properties();
         properties.put("storage.values", "whitelist");
         try {
             Config.readConfigFromProperties(properties);
+            Config.validateConfig();
             fail("There should have been an exception: storage.values.list is empty.");
         } catch (final IllegalStateException expected) {
             // This is good, the validation worked.

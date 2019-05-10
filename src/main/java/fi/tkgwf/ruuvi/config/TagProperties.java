@@ -47,7 +47,7 @@ public class TagProperties {
     public static class Builder {
         private String mac;
         private LimitingStrategy limitingStrategy;
-        private String storageValues;
+        private StorageValuesEnum storageValues;
         private Collection<String> storageValuesList = new HashSet<>();
 
         public Builder(final String mac) {
@@ -60,7 +60,7 @@ public class TagProperties {
                     this.limitingStrategy = new DefaultDiscardingWithMotionSensitivityStrategy();
                 }
             } else if ("storage.values".equals(key)) {
-                this.storageValues = value;
+                this.storageValues = StorageValuesEnum.resolve(value);
             } else if ("storage.values.list".equals(key)) {
                 this.storageValuesList = Config.parseFilterInfluxDbFields(value);
             }

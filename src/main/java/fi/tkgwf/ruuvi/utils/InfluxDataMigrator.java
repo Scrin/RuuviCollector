@@ -3,7 +3,6 @@ package fi.tkgwf.ruuvi.utils;
 import fi.tkgwf.ruuvi.bean.EnhancedRuuviMeasurement;
 import fi.tkgwf.ruuvi.config.Config;
 import fi.tkgwf.ruuvi.db.DBConnection;
-import fi.tkgwf.ruuvi.db.InfluxDBConnection;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
