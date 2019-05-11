@@ -170,4 +170,29 @@ public class ConfigTest {
         assertTrue(predicate.test("temperature")); // Allowed
         assertTrue(predicate.test("dewPoint")); // Allowed
     }
+
+    @Test
+    void testparseFilterMode() {
+
+
+        assertTrue(Config.isAllowedMAC("AB12CD34EF56"));
+        assertTrue(Config.isAllowedMAC("XX12CD34EF56"));
+        assertTrue(Config.isAllowedMAC("ABCDEFG"));
+        assertFalse(Config.isAllowedMAC(null));
+        
+        final Properties properties = new Properties();
+        properties.put("filter.mode", "named");
+        try {
+            Config.readConfigFromProperties(properties);
+            
+        } catch (final IllegalStateException expected) {
+            fail("There should have been an exception: ruuvi-names.properties is empty.");
+            // This is good, the validation worked.
+        }
+        assertTrue(Config.isAllowedMAC("AB12CD34EF56"));
+        assertFalse(Config.isAllowedMAC("XX12CD34EF56"));
+        assertFalse(Config.isAllowedMAC("ABCDEFG"));
+        assertFalse(Config.isAllowedMAC(null));
+
+    }
 }

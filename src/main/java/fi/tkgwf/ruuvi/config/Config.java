@@ -253,6 +253,8 @@ public abstract class Config {
                     return (s) -> !FILTER_MACS.contains(s);
                 case "whitelist":
                     return FILTER_MACS::contains;
+                case "named":
+                    return TAG_NAMES.keySet()::contains;
             }
         }
         return filterMode;
