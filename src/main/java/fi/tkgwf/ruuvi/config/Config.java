@@ -82,8 +82,8 @@ public abstract class Config {
     public static void reload(final Function<String, File> configFileFinder) {
         Config.configFileFinder = configFileFinder;
         loadDefaults();
-        readConfig();
         readTagNames();
+        readConfig();
     }
 
     private static void loadDefaults() {
@@ -253,6 +253,13 @@ public abstract class Config {
                     return (s) -> !FILTER_MACS.contains(s);
                 case "whitelist":
                     return FILTER_MACS::contains;
+                case "named":
+                    if (TAG_NAMES.isEmpty()) {
+                        throw new IllegalStateException(
+                        "You have set filter.mode=named but left ruuvi-names.properties empty. " +
+                        "Please select a different filter.mode value or populate ruuvi-names.properties.");
+                    }
+                    return TAG_NAMES.keySet()::contains;
             }
         }
         return filterMode;
