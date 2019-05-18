@@ -86,6 +86,7 @@ public class ConfigTest {
 
     @Test
     void testOverriddenMacFilterList() {
+        assertFalse(Config.isAllowedMAC(null));
         assertFalse(Config.isAllowedMAC("ABCDEF012345"));
         assertFalse(Config.isAllowedMAC("F1E2D3C4B5A6"));
         assertTrue(Config.isAllowedMAC("123000000456"));
@@ -168,5 +169,23 @@ public class ConfigTest {
         assertTrue(predicate.test("quux")); // Allowed
         assertTrue(predicate.test("temperature")); // Allowed
         assertTrue(predicate.test("dewPoint")); // Allowed
+    }
+
+    @Test
+    void testparseFilterMode() {
+
+        assertTrue(Config.isAllowedMAC("AB12CD34EF56"));
+        assertTrue(Config.isAllowedMAC("XX12CD34EF56"));
+        assertTrue(Config.isAllowedMAC("ABCDEFG"));
+        assertFalse(Config.isAllowedMAC(null));
+        
+        //Change to named
+        final Properties properties = new Properties();
+        properties.put("filter.mode", "named");
+        Config.readConfigFromProperties(properties);
+        assertTrue(Config.isAllowedMAC("AB12CD34EF56"));
+        assertFalse(Config.isAllowedMAC("XX12CD34EF56"));
+        assertFalse(Config.isAllowedMAC("ABCDEFG"));
+        assertFalse(Config.isAllowedMAC(null));
     }
 }
