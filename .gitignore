@@ -1,6 +1,6 @@
 target/
-ruuvi-collector.properties
-ruuvi-names.properties
+/ruuvi-collector.properties
+/ruuvi-names.properties
 .idea/
 *.iml
 .settings/org.eclipse.m2e.core.prefs
