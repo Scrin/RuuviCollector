@@ -174,7 +174,7 @@ public class ConfigTest {
     @Test
     void testparseFilterMode() {
 
-         assertTrue(Config.isAllowedMAC("AB12CD34EF56"));
+        assertTrue(Config.isAllowedMAC("AB12CD34EF56"));
         assertTrue(Config.isAllowedMAC("XX12CD34EF56"));
         assertTrue(Config.isAllowedMAC("ABCDEFG"));
         assertFalse(Config.isAllowedMAC(null));
