@@ -35,7 +35,8 @@
 # Valid values "none", "blacklist" and "whitelist". 
 # none      = Allows any source to be stored (default)
 # blacklist = Allows all sources EXCEPT those listed
-# whitelist = Allows ONLY sources that are listed
+# whitelist = Allows ONLY sources that are listed in filter.macs
+# named     = Allows ONLY sources that are listed in ruuvi-names.properties
 #filter.mode=none
 
 # Mac addresses to blacklist/whitelist. This has no effect if filter.mode is set to none
