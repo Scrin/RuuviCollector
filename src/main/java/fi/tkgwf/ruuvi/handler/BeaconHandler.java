@@ -28,7 +28,7 @@ public class BeaconHandler {
         if (adData == null) {
             adData = hciData.findAdvertisementDataByType(0x16); // Eddystone url
             if (adData == null) {
-                return null;
+                return Optional.empty();
             }
         }
         RuuviMeasurement measurement = parser.parse(adData.dataBytes());

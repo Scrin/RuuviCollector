@@ -1,5 +1,11 @@
 # Changelog
 
+### v0.2.5
+
+ - Improved error tolerance while parsing for raw data
+ - General refactoring with no functional changes
+ - Added "named" filter mode which saves only named tags (thanks matthewgardner)
+
 ### v0.2.4
 
  - Significant amount of refactoring, this release may be a bit more unstable than usual
