@@ -4,6 +4,7 @@ import fi.tkgwf.ruuvi.db.DBConnection;
 import fi.tkgwf.ruuvi.db.DummyDBConnection;
 import fi.tkgwf.ruuvi.db.InfluxDBConnection;
 import fi.tkgwf.ruuvi.db.LegacyInfluxDBConnection;
+import fi.tkgwf.ruuvi.db.PrometheusExporter;
 import fi.tkgwf.ruuvi.strategy.LimitingStrategy;
 import fi.tkgwf.ruuvi.strategy.impl.DefaultDiscardingWithMotionSensitivityStrategy;
 import fi.tkgwf.ruuvi.strategy.impl.DiscardUntilEnoughTimeHasElapsedStrategy;
@@ -72,6 +73,7 @@ public abstract class Config {
     private static int defaultWithMotionSensitivityStrategyNumberOfPreviousMeasurementsToKeep;
     private static Map<String, TagProperties> tagProperties;
     private static Function<String, File> configFileFinder;
+    private static int prometheusHttpPort;
 
     static {
         reload();
@@ -115,6 +117,7 @@ public abstract class Config {
         defaultWithMotionSensitivityStrategyThreshold = 0.05;
         defaultWithMotionSensitivityStrategyNumberOfPreviousMeasurementsToKeep = 3;
         tagProperties = new HashMap<>();
+        prometheusHttpPort = 9155;
     }
 
     private static void readConfig() {
@@ -155,6 +158,7 @@ public abstract class Config {
         defaultWithMotionSensitivityStrategyThreshold = parseDouble(props, "limitingStrategy.defaultWithMotionSensitivity.threshold", defaultWithMotionSensitivityStrategyThreshold);
         defaultWithMotionSensitivityStrategyNumberOfPreviousMeasurementsToKeep = parseInteger(props, "limitingStrategy.defaultWithMotionSensitivity.numberOfMeasurementsToKeep", defaultWithMotionSensitivityStrategyNumberOfPreviousMeasurementsToKeep);
         tagProperties = parseTagProperties(props);
+        prometheusHttpPort = parseInteger(props, "prometheusHttpPort", prometheusHttpPort);
         validateConfig();
     }
 
@@ -346,11 +350,14 @@ public abstract class Config {
     }
 
     private static DBConnection createDBConnection() {
+        LOG.info("Creating database connection for storageMethod: " + storageMethod);
         switch (storageMethod) {
             case "influxdb":
                 return new InfluxDBConnection();
             case "influxdb_legacy":
                 return new LegacyInfluxDBConnection();
+            case "prometheus":
+                return new PrometheusExporter(getPrometheusHttpPort());
             case "dummy":
                 return new DummyDBConnection();
             default:
@@ -441,6 +448,10 @@ public abstract class Config {
 
     public static String getTagName(String mac) {
         return TAG_NAMES.get(mac);
+    }
+
+    public static int getPrometheusHttpPort() {
+        return prometheusHttpPort;
     }
 
     public static Supplier<Long> getTimestampProvider() {
