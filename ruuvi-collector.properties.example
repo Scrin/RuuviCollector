@@ -32,7 +32,7 @@
 #limitingStrategy.defaultWithMotionSensitivity.threshold=0.05
 
 # Filtering for sources based on the source MAC address (blacklist or whitelist)
-# Valid values "none", "blacklist" and "whitelist". 
+# Valid values "none", "blacklist" and "whitelist".
 # none      = Allows any source to be stored (default)
 # blacklist = Allows all sources EXCEPT those listed
 # whitelist = Allows ONLY sources that are listed in filter.macs
@@ -42,7 +42,7 @@
 # Mac addresses to blacklist/whitelist. This has no effect if filter.mode is set to none
 #filter.macs=ABCDEF012345,F1E2D3C4B5A6
 
-# Storage method, currently valid values: "influxdb", "legacy_influxdb" and "dummy"
+# Storage method, currently valid values: "influxdb", "legacy_influxdb", "prometheus" and "dummy"
 # influxdb        = Recommended and default, this stores the values to InfluxDB into a single measurement
 # influxdb_legacy = The old format used by this collector on versions before 0.2.0, stores values into separate measurements.
 #                   NOTE: influxdb_legacy is no longer supported, you should use the new influxdb format and migrate old data, see CHANGELOG.md
