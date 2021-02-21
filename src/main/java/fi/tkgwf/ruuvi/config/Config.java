@@ -64,6 +64,7 @@ public abstract class Config {
     private static Predicate<String> filterMode;
     private static final Set<String> FILTER_MACS = new HashSet<>();
     private static final Map<String, String> TAG_NAMES = new HashMap<>();
+    private static String receiver = ""; // used to tag received values with an identifier associated to this service
     private static String[] scanCommand;
     private static String[] dumpCommand;
     private static DBConnection dbConnection;
@@ -147,6 +148,7 @@ public abstract class Config {
         influxDbFieldFilter = createInfluxDbFieldFilter();
         filterMode = parseFilterMode(props);
         FILTER_MACS.addAll(parseFilterMacs(props));
+        receiver = props.getProperty("receiver", "");
         scanCommand = props.getProperty("command.scan", DEFAULT_SCAN_COMMAND).split(" ");
         dumpCommand = props.getProperty("command.dump", DEFAULT_DUMP_COMMAND).split(" ");
         influxRetentionPolicy = props.getProperty("influxRetentionPolicy", influxRetentionPolicy);
@@ -436,6 +438,10 @@ public abstract class Config {
 
     public static boolean isAllowedMAC(String mac) {
         return mac != null && filterMode.test(mac);
+    }
+
+    public static String getReceiver() {
+        return receiver;
     }
 
     public static String[] getScanCommand() {
