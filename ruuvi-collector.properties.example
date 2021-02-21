@@ -49,6 +49,10 @@
 # dummy           = Logs the measurements to the log rather than sending them anywhere, feasible for testing and development
 #storage.method=influxdb
 
+# A receiver identifier to tag values written by this instance to influxdb.
+# You could put in e.g. your host name or bluetooth receiver MAC here.
+#receiver=
+
 # Values to store, the collector is capable of calculating additional values from the values received from a tag, for example absolute humidity and dew point
 # Valid values "raw", "extended", "whitelist", "blacklist":
 # raw       = Save only the raw values received from the tag. Ignores the storage.values.list property.

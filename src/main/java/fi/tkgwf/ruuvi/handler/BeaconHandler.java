@@ -39,6 +39,7 @@ public class BeaconHandler {
         enhancedMeasurement.setMac(hciData.mac);
         enhancedMeasurement.setRssi(hciData.rssi);
         enhancedMeasurement.setName(Config.getTagName(hciData.mac));
+        enhancedMeasurement.setReceiver(Config.getReceiver());
         return Optional.of(enhancedMeasurement);
     }
 }

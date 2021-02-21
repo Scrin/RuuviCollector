@@ -42,6 +42,10 @@ public class EnhancedRuuviMeasurement extends RuuviMeasurement {
      */
     private String mac;
     /**
+     * Arbitrary string associated with the receiver.
+     */
+    private String receiver;
+    /**
      * The RSSI at the receiver
      */
     private Integer rssi;
@@ -102,6 +106,14 @@ public class EnhancedRuuviMeasurement extends RuuviMeasurement {
         this.mac = mac;
     }
     
+    public String getReceiver() {
+        return receiver;
+    }
+
+    public void setReceiver(String receiver) {
+        this.receiver = receiver;
+    }
+
     public Integer getRssi() {
         return rssi;
     }
@@ -180,6 +192,7 @@ public class EnhancedRuuviMeasurement extends RuuviMeasurement {
                 + "time=" + time 
                 + ", name=" + name 
                 + ", mac=" + mac 
+                + ", receiver=" + receiver 
                 + ", rssi=" + rssi 
                 + ", accelerationTotal=" + accelerationTotal 
                 + ", accelerationAngleFromX=" + accelerationAngleFromX 
