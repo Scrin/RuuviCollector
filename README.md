@@ -2,7 +2,7 @@
 
 RuuviCollector is an application for collecting sensor measurements from RuuviTags and storing them to InfluxDB. For more about how and for what this is used for, see [this](https://f.ruuvi.com/t/collecting-ruuvitag-measurements-and-displaying-them-with-grafana/267) post.
 
-Note: As this application is still early in development, there is very little documentation at this point, so some knowledge in Linux and Java is necessary for fully understanding how to use this at this point.
+Note: This tool is primarily intended for advanced users, so some knowledge in Linux and Java might be necessary for fully understanding how to use this. However there is a more beginner friendly setup "guide" [here](https://ruuvi.com/setting-up-raspberry-pi-as-a-ruuvi-gateway/)
 
 ### Features
 
@@ -12,6 +12,12 @@ Supports following RuuviTag [Data Formats](https://github.com/ruuvi/ruuvi-sensor
  - Data Format 3: "RAW v1" BLE Manufacturer specific data, all current sensor readings
  - Data Format 4: Eddystone-URL, URL-safe base64 -encoded, with tag id
  - Data Format 5: "RAW v2" BLE Manufacturer specific data, all current sensor readings + extra
+
+Additionally basic support for iBeacon and Eddystone exists:
+
+ - iBeacon: MAC, RSSI and other receiver-side generated data
+ - Eddystone UID: MAC, RSSI and other receiver-side generated data
+ - Eddystone TLM: temperature, battery voltage, MAC, RSSI and other receiver-side generated data
 
 Supports following data from the tag (depending on tag firmware):
 

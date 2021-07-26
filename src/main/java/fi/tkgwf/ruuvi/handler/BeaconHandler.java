@@ -13,14 +13,11 @@ import fi.tkgwf.ruuvi.parser.IBeaconParser;
 import fi.tkgwf.ruuvi.parser.EddystoneTLMParser;
 import fi.tkgwf.ruuvi.parser.EddystoneUIDParser;
 import java.util.Optional;
-import org.apache.log4j.Logger;
 
 /**
  * Creates {@link RuuviMeasurement} instances from raw dumps from hcidump.
  */
 public class BeaconHandler {
-
-    private static final Logger LOG = Logger.getLogger(BeaconHandler.class);
 
     private final DataFormatParser parser = new AnyDataFormatParser();
 
@@ -57,8 +54,6 @@ public class BeaconHandler {
             enhancedMeasurement.setReceiver(Config.getReceiver());
             return Optional.of(enhancedMeasurement);
         } else if (adData.dataBytes()[0] == (byte) 0x4C && adData.dataBytes()[1] == (byte) 0x00 && adData.dataBytes()[2] == (byte) 0x02 && adData.dataBytes()[3] == (byte) 0x15) {
-            LOG.debug("iBeacon");
-
             IBeacon beacon = IBeaconParser.parse(adData.dataBytes());
             if (beacon == null) {
                 return Optional.empty();
@@ -71,8 +66,6 @@ public class BeaconHandler {
             enhancedMeasurement.setReceiver(Config.getReceiver());
             return Optional.of(enhancedMeasurement);
         } else if ((adData.dataBytes()[0] == (byte) 0xAA) && (adData.dataBytes()[1] == (byte) 0xFE) && (adData.dataBytes()[2] == (byte) 0x00)) {
-            LOG.debug("Eddystone UID");
-
             EddystoneUID eddystoneUID = EddystoneUIDParser.parse(adData.dataBytes());
             if (eddystoneUID == null) {
                 return Optional.empty();
@@ -85,8 +78,6 @@ public class BeaconHandler {
             enhancedMeasurement.setReceiver(Config.getReceiver());
             return Optional.of(enhancedMeasurement);
         } else if ((adData.dataBytes()[0] == (byte) 0xAA) && (adData.dataBytes()[1] == (byte) 0xFE) && (adData.dataBytes()[2] == (byte) 0x20)) {
-            LOG.debug("Eddystone TLM");
-
             EddystoneTLM eddystoneTLM = EddystoneTLMParser.parse(adData.dataBytes());
             if (eddystoneTLM == null) {
                 return Optional.empty();

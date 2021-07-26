@@ -1,5 +1,11 @@
 # Changelog
 
+### v0.2.7
+
+ - Added support for ibeacon and eddystone uid/tlm beacon formats (thanks Julia Goudsmith and Mustafa Yuecel (Siemens Mobility))
+ - Added a configurable "receiver" tag (thanks Erkki Seppälä)
+ - Added prometheus backend (thanks Joe Kearney)
+
 ### v0.2.6
 
  - Fix UTF-8 support in config files (ruuvi-collector.properties and ruuvi-names.properties). This might be a breaking change if your config relied on broken charset support.

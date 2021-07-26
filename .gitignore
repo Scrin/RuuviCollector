@@ -3,7 +3,8 @@ target/
 /ruuvi-names.properties
 .idea/
 *.iml
-.settings/org.eclipse.m2e.core.prefs
+.settings
+.vscode
 .classpath
 .factorypath
 .project
