@@ -2,6 +2,8 @@
 
 RuuviCollector is an application for collecting sensor measurements from RuuviTags and storing them to InfluxDB. For more about how and for what this is used for, see [this](https://f.ruuvi.com/t/collecting-ruuvitag-measurements-and-displaying-them-with-grafana/267) post.
 
+Do you have a [Ruuvi Gateway](https://ruuvi.com/gateway/)? You might be insterested in [RuuviBridge](https://github.com/Scrin/RuuviBridge) instead. You can also use [ruuvi-go-gateway](https://github.com/Scrin/ruuvi-go-gateway) if you want to upgrade to the "new stack" without needing a physical Ruuvi Gateway, or want to use a mix of both.
+
 Note: This tool is primarily intended for advanced users, so some knowledge in Linux and Java might be necessary for fully understanding how to use this. However there is a more beginner friendly setup "guide" [here](https://ruuvi.com/setting-up-raspberry-pi-as-a-ruuvi-gateway/)
 
 ### Features
