@@ -61,6 +61,9 @@ public abstract class Utils {
         }
 
         String[] terms = line.split (" ");
+        if (terms.length <= 13) {
+            return null;
+        }
         StringBuilder sb = new StringBuilder();
         for (int i = 13; i >= 8; i--) {
             sb.append(terms[i]);
