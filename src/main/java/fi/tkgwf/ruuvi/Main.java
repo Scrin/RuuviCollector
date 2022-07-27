@@ -14,6 +14,7 @@ import java.io.InputStreamReader;
 import java.util.Arrays;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+import org.influxdb.InfluxDBIOException;
 
 public class Main {
 
@@ -108,6 +109,9 @@ public class Main {
                             healthy = true;
                         }
                     }
+                } catch (InfluxDBIOException ex) {
+                    LOG.error("Database connection lost while attempting to save measurements to InfluxDB", ex);
+                    return false;
                 } catch (Exception ex) {
                     if (latestMAC != null) {
                         LOG.warn("Uncaught exception while handling measurements from MAC address \"" + latestMAC + "\", if this repeats and this is not a Ruuvitag, try blacklisting it", ex);
