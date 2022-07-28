@@ -123,7 +123,9 @@ public class Main {
             }
         } catch (IOException ex) {
             LOG.error("Uncaught exception while reading measurements", ex);
-            return false;
+            if (Config.exitOnInfluxDBIOException()) {
+                return false;
+            }
         }
         return healthy;
     }

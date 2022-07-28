@@ -54,6 +54,7 @@ public abstract class Config {
     private static String influxRetentionPolicy;
     private static boolean influxGzip;
     private static boolean influxBatch;
+    private static boolean exitOnInfluxDBIOException;
     private static int influxBatchMaxSize;
     private static int influxBatchMaxTimeMs;
     private static long measurementUpdateLimit;
@@ -100,6 +101,7 @@ public abstract class Config {
         influxRetentionPolicy = "autogen";
         influxGzip = true;
         influxBatch = true;
+        exitOnInfluxDBIOException = false;
         influxBatchMaxSize = 2000;
         influxBatchMaxTimeMs = 100;
         measurementUpdateLimit = 9900;
@@ -154,6 +156,7 @@ public abstract class Config {
         influxRetentionPolicy = props.getProperty("influxRetentionPolicy", influxRetentionPolicy);
         influxGzip = parseBoolean(props, "influxGzip", influxGzip);
         influxBatch = parseBoolean(props, "influxBatch", influxBatch);
+        exitOnInfluxDBIOException = parseBoolean(props, "exitOnInfluxDBIOException", exitOnInfluxDBIOException);
         influxBatchMaxSize = parseInteger(props, "influxBatchMaxSize", influxBatchMaxSize);
         influxBatchMaxTimeMs = parseInteger(props, "influxBatchMaxTime", influxBatchMaxTimeMs);
         limitingStrategy = parseLimitingStrategy(props);
@@ -422,6 +425,10 @@ public abstract class Config {
 
     public static boolean isInfluxBatch() {
         return influxBatch;
+    }
+
+    public static boolean exitOnInfluxDBIOException() {
+        return exitOnInfluxDBIOException;
     }
 
     public static int getInfluxBatchMaxSize() {
