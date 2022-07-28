@@ -111,7 +111,9 @@ public class Main {
                     }
                 } catch (InfluxDBIOException ex) {
                     LOG.error("Database connection lost while attempting to save measurements to InfluxDB", ex);
-                    return false;
+                    if (Config.exitOnInfluxDBIOException()) {
+                        return false;
+                    }
                 } catch (Exception ex) {
                     if (latestMAC != null) {
                         LOG.warn("Uncaught exception while handling measurements from MAC address \"" + latestMAC + "\", if this repeats and this is not a Ruuvitag, try blacklisting it", ex);
@@ -123,9 +125,7 @@ public class Main {
             }
         } catch (IOException ex) {
             LOG.error("Uncaught exception while reading measurements", ex);
-            if (Config.exitOnInfluxDBIOException()) {
-                return false;
-            }
+            return false;
         }
         return healthy;
     }
