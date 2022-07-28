@@ -88,6 +88,11 @@
 # Use batch mode, improved performance at the cost of increased delay for measurements to show up. Does not affect the timestamps.
 #influxBatch=true
 
+# Exit when InfluxDB connection is lost so systemd can take action (disabled by
+# default for backward compatibility, requires influxBatch to be false to take
+# effect due to limitations of the InfluxDB library)
+#exitOnInfluxDBIOException=false
+
 # Maximum number of datapoints and maximum time waited in milliseconds before sending a batch. Has no effect if batch mode disabled.
 #influxBatchMaxSize=2000
 #influxBatchMaxTime=100
