@@ -49,6 +49,11 @@ for i in "$@"; do
     esac
 done
 
+echo "DEBUG: DB_URL = $DB_URL"
+echo "DEBUG: DB_USER = $DB_USER"
+echo "DEBUG: DB_PASS = $DB_PASS"
+echo "DEBUG: DB_NAME = $DB_NAME"
+
 # Permission check
 if [ "$USER" != "root" ]; then
 	echo "Error: installation script must be run as root (e.g. sudo)"
