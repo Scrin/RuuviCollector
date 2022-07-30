@@ -98,20 +98,20 @@ if [ ! -f /opt/ruuvicollector/ruuvi-collector.properties ]; then
     fi
 fi
 
-# Use database, username and password, if they were set
-if [ -v DB_URL ]; then
+# Use database, username and password values, if they were set
+if [ -n "$DB_URL" ]; then
     sed -i "s|[#]influxUrl=.*|influxUrl=$DB_URL|" \
         /opt/ruuvicollector/ruuvi-collector.properties
 fi
-if [ -v DB_USER ]; then
+if [ -n "$DB_USER" ]; then
     sed -i "s/[#]influxUser=.*/influxUser=$DB_USER/" \
         /opt/ruuvicollector/ruuvi-collector.properties
 fi
-if [ -v DB_PASS ]; then
+if [ -n "$DB_PASS" ]; then
     sed -i "s|[#]influxPassword=.*|influxPassword=$DB_PASS|" \
         /opt/ruuvicollector/ruuvi-collector.properties
 fi
-if [ -v DB_NAME ]; then
+if [ -n "$DB_NAME" ]; then
     sed -i "s/[#]influxDatabase=.*/influxDatabase=$DB_NAME/" \
         /opt/ruuvicollector/ruuvi-collector.properties
 fi
