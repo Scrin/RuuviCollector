@@ -29,30 +29,14 @@
 #
 
 # Parse any provided arguments
-for i in "$@"; do
-    case $i in
-        -d=*|--database=*)
-        DB_URL="${i#*=}"
-        ;;
-        -u=*|--username=*)
-        DB_USER="${i#*=}"
-        ;;
-        -p=*|--password=*)
-        DB_PASS="${i#*=}"
-        ;;
-        -n=*|--database-name=*)
-        DB_NAME="${i#*=}"
-        ;;
-        *)
-            # unknown option
-        ;;
+while getopts "d:u:p:n:" opt; do
+    case $opt in
+        d) DB_URL="$OPTARG";;
+        u) DB_USER="$OPTARG";;
+        p) DB_PASS="$OPTARG";;
+        n) DB_NAME="$OPTARG";;
     esac
 done
-
-echo "DEBUG: DB_URL = $DB_URL"
-echo "DEBUG: DB_USER = $DB_USER"
-echo "DEBUG: DB_PASS = $DB_PASS"
-echo "DEBUG: DB_NAME = $DB_NAME"
 
 # Permission check
 if [ "$USER" != "root" ]; then
