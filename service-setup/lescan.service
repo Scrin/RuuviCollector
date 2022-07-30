@@ -1,0 +1,10 @@
+[Unit]
+Description=BLE Scanning Service
+After=network.target
+[Service]
+Type=simple
+User=pi
+ExecStart=/usr/bin/hcitool lescan --duplicates --passive
+Restart=always
+[Install]
+WantedBy=multi-user.target
