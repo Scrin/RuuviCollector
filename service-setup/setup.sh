@@ -117,7 +117,6 @@ if [ -n "$DB_NAME" ]; then
 fi
 
 # Now to set up the services
-cp lescan.service /etc/systemd/system/lescan.service
-cp ruuvicollector.service /etc/systemd/system/ruuvicollector.service
+cp service-setup/lescan.service service-setup/ruuvicollector.service /etc/systemd/system
 systemctl enable lescan ruuvicollector
 systemctl start lescan ruuvicollector
