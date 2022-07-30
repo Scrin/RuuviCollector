@@ -63,7 +63,11 @@ scriptpath=`dirname $abspath`
 cd $scriptpath/..
 pwd
 
-apt install -y git maven openjdk-8-jdk-headless
+apt install -y git maven
+# Install the latest JDK that is available
+apt install -y openjdk-17-jdk-headless || \
+    apt install -y openjdk-11-jdk-headless || \
+    apt install -y openjdk-8-jdk-headless
 mvn clean package
 
 mkdir -p /opt/ruuvicollector
