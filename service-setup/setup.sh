@@ -64,7 +64,7 @@ cd $scriptpath/..
 pwd
 
 apt update
-apt install -y maven
+apt install -y maven bluez bluez-hcidump
 # Install the latest JDK that is available
 apt install -y openjdk-17-jdk-headless || \
     apt install -y openjdk-11-jdk-headless || \
