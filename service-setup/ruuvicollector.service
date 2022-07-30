@@ -3,7 +3,6 @@ Description=RuuviCollector Service
 After=network.target
 [Service]
 Type=simple
-User=pi
 WorkingDirectory=/opt/ruuvicollector
 ExecStart=/usr/bin/java -jar /opt/ruuvicollector/ruuvi-collector-0.2.jar                             
 Restart=always
