@@ -1,6 +1,6 @@
 [Unit]
 Description=RuuviCollector Service
-After=network.target
+After=network.target lescan.service
 [Service]
 Type=simple
 WorkingDirectory=/opt/ruuvicollector
