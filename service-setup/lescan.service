@@ -1,6 +1,6 @@
 [Unit]
 Description=BLE Scanning Service
-After=network.target
+After=default.target
 [Service]
 Type=simple
 # Ensure the bluetooth interface is in a good state prior to starting the scan
