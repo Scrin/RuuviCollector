@@ -63,7 +63,8 @@ scriptpath=`dirname $abspath`
 cd $scriptpath/..
 pwd
 
-apt install -y git maven
+apt update
+apt install -y maven
 # Install the latest JDK that is available
 apt install -y openjdk-17-jdk-headless || \
     apt install -y openjdk-11-jdk-headless || \
