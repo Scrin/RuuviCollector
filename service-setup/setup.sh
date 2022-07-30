@@ -72,7 +72,7 @@ apt install -y openjdk-17-jdk-headless || \
 mvn clean package
 
 mkdir -p /opt/ruuvicollector
-cp target/* /opt/ruuvicollector
+cp -r target/* /opt/ruuvicollector
 # We do not overwrite existing configuration files
 if [ ! -f /opt/ruuvicollector/ruuvi-collector.properties ]; then
     # If we have a ruuvi-collector.properties, we use that, otherwise we fall
