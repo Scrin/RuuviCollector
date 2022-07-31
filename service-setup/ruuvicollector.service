@@ -1,5 +1,6 @@
 [Unit]
 Description=RuuviCollector Service
+DefaultDependencies=False
 After=network.target lescan.service
 [Service]
 Type=simple
