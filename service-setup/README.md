@@ -1,11 +1,12 @@
 # Quickstart
 To install RuuviCollector as a service and write collected data to an InfluxDB
-database, you can run setup.sh from this directory.
+database, you can run setup.sh from this directory after cloning the repo.
 
 ```sh
 # Here's an example, you'd have to change the database URL, username, password,
 # and database name accordingly to suit your deployment.
-./setup.sh -d "https://database.example.com:8086" -u ruuvi_user -p hunter2 -n ruuvitags
+git clone https://github.com/Scrin/RuuviCollector
+./RuuviCollector/service-setup/setup.sh -d "https://database.example.com:8086" -u ruuvi_user -p hunter2 -n ruuvitags
 ```
 
 All files are installed into /opt/ruuvicollector
