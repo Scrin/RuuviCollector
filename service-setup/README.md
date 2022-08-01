@@ -1,4 +1,5 @@
 # Quickstart
+
 To install RuuviCollector as a service and write collected data to an InfluxDB
 database, you can run setup.sh from this directory after cloning the repo.
 
@@ -12,13 +13,14 @@ git clone https://github.com/Scrin/RuuviCollector
 All files are installed into /opt/ruuvicollector
 
 # Configuration file
+
 The setup script won't overwrite /opt/ruuvicollector/ruuvi-collector.properties
 if it exists, but it will update the configuration with any values passed in on
 the command line.
 
 If there is not an existing /opt/ruuvicollector/ruuvi-collector.properties file,
 setup.sh will look for a ruuvi-collector.properties in the root of the git
-checkout.  If you are restoring from a backup or a version control system, you
+checkout. If you are restoring from a backup or a version control system, you
 would want to put your ruuvi-collector.properties there in order for it to be
 installed.
 

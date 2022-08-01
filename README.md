@@ -10,51 +10,51 @@ Note: This tool is primarily intended for advanced users, so some knowledge in L
 
 Supports following RuuviTag [Data Formats](https://github.com/ruuvi/ruuvi-sensor-protocols):
 
- - Data Format 2: Eddystone-URL, URL-safe base64 -encoded, kickstarter edition
- - Data Format 3: "RAW v1" BLE Manufacturer specific data, all current sensor readings
- - Data Format 4: Eddystone-URL, URL-safe base64 -encoded, with tag id
- - Data Format 5: "RAW v2" BLE Manufacturer specific data, all current sensor readings + extra
+-   Data Format 2: Eddystone-URL, URL-safe base64 -encoded, kickstarter edition
+-   Data Format 3: "RAW v1" BLE Manufacturer specific data, all current sensor readings
+-   Data Format 4: Eddystone-URL, URL-safe base64 -encoded, with tag id
+-   Data Format 5: "RAW v2" BLE Manufacturer specific data, all current sensor readings + extra
 
 Additionally basic support for iBeacon and Eddystone exists:
 
- - iBeacon: MAC, RSSI and other receiver-side generated data
- - Eddystone UID: MAC, RSSI and other receiver-side generated data
- - Eddystone TLM: temperature, battery voltage, MAC, RSSI and other receiver-side generated data
+-   iBeacon: MAC, RSSI and other receiver-side generated data
+-   Eddystone UID: MAC, RSSI and other receiver-side generated data
+-   Eddystone TLM: temperature, battery voltage, MAC, RSSI and other receiver-side generated data
 
 Supports following data from the tag (depending on tag firmware):
 
- - Temperature (Celsius)
- - Relative humidity (0-100%)
- - Air pressure (Pascal)
- - Acceleration for X, Y and Z axes (g)
- - Battery voltage (Volts)
- - TX power (dBm)
- - RSSI (Signal strength *at the receiver*, dBm)
- - Movement counter (Running counter incremented each time a motion detection interrupt is received)
- - Measurement sequence number (Running counter incremented each time a new measurement is taken on the tag)
+-   Temperature (Celsius)
+-   Relative humidity (0-100%)
+-   Air pressure (Pascal)
+-   Acceleration for X, Y and Z axes (g)
+-   Battery voltage (Volts)
+-   TX power (dBm)
+-   RSSI (Signal strength _at the receiver_, dBm)
+-   Movement counter (Running counter incremented each time a motion detection interrupt is received)
+-   Measurement sequence number (Running counter incremented each time a new measurement is taken on the tag)
 
 Ability to calculate following values in addition to the raw data (the accuracy of these values are approximations):
 
- - Total acceleration (g)
- - Absolute humidity (g/m³)
- - Dew point (Celsius)
- - Equilibrium vapor pressure (Pascal)
- - Air density (Accounts for humidity in the air, kg/m³)
- - Acceleration angle from X, Y and Z axes (Degrees)
+-   Total acceleration (g)
+-   Absolute humidity (g/m³)
+-   Dew point (Celsius)
+-   Equilibrium vapor pressure (Pascal)
+-   Air density (Accounts for humidity in the air, kg/m³)
+-   Acceleration angle from X, Y and Z axes (Degrees)
 
 See [MEASUREMENTS.md](./MEASUREMENTS.md) for additional details about the measurements.
 
 ### Requirements
 
-* Linux-based OS (this application uses the bluez stack for Bluetooth which is not available for Windows for example)
-* Bluetooth adapter supporting Bluetooth Low Energy
-* *bluez* and *bluez-hcidump* at least version 5.41 (For running the application, versions prior to 5.41 have a bug which causes the bluetooth to hang occasionally while doing BLE scanning)
-* Maven (For building from sources)
-* JDK8 (For building from sources, JRE8 is enough for just running the built JAR)
+-   Linux-based OS (this application uses the bluez stack for Bluetooth which is not available for Windows for example)
+-   Bluetooth adapter supporting Bluetooth Low Energy
+-   _bluez_ and _bluez-hcidump_ at least version 5.41 (For running the application, versions prior to 5.41 have a bug which causes the bluetooth to hang occasionally while doing BLE scanning)
+-   Maven (For building from sources)
+-   JDK8 (For building from sources, JRE8 is enough for just running the built JAR)
 
 ### Building
 
-Execute 
+Execute
 
 ```sh
 mvn clean package
@@ -63,20 +63,22 @@ mvn clean package
 ### Installation
 
 #### Automatic Setup
+
 Service scripts and other necessary stuff for "properly installing" this are
-available in the [service-setup](service-setup/README.md) directory.
+available in the [service-setup](./service-setup/) directory.
 
 #### Manual Setup
-- hcitool and hcidump require additional capabilities to be run as a normal user, so you need to execute the following commands or run the application as root
+
+-   hcitool and hcidump require additional capabilities to be run as a normal user, so you need to execute the following commands or run the application as root
 
 ```sh
 sudo setcap 'cap_net_raw,cap_net_admin+eip' `which hcitool`
 sudo setcap 'cap_net_raw,cap_net_admin+eip' `which hcidump`
 ```
 
-- Run the built JAR-file with `java -jar ruuvi-collector-*.jar`
-  - Note: it's recommended to run this for example inside *screen* to avoid the application being killed when terminal session ends
-- To configure the settings, copy the `ruuvi-collector.properties.example` to `ruuvi-collector.properties` and place it in the same directory as the JAR file and edit the file according to your needs.
+-   Run the built JAR-file with `java -jar ruuvi-collector-*.jar`
+    -   Note: it's recommended to run this for example inside _screen_ to avoid the application being killed when terminal session ends
+-   To configure the settings, copy the `ruuvi-collector.properties.example` to `ruuvi-collector.properties` and place it in the same directory as the JAR file and edit the file according to your needs.
 
 ### Configuration
 

@@ -1,5 +1,9 @@
 # Changelog
 
+### [future/no source code changes]
+
+-   Added sample service and setup scripts and related documentation (thanks anon8675309)
+
 ### v0.2.8
 
 -   Added support for triggering a program exit in case of connection loss to InfluxDB (thanks anon8675309)
