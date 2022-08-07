@@ -3,7 +3,6 @@ package fi.tkgwf.ruuvi.config;
 import fi.tkgwf.ruuvi.db.DBConnection;
 import fi.tkgwf.ruuvi.db.DummyDBConnection;
 import fi.tkgwf.ruuvi.db.InfluxDBConnection;
-import fi.tkgwf.ruuvi.db.LegacyInfluxDBConnection;
 import fi.tkgwf.ruuvi.db.PrometheusExporter;
 import fi.tkgwf.ruuvi.strategy.LimitingStrategy;
 import fi.tkgwf.ruuvi.strategy.impl.DefaultDiscardingWithMotionSensitivityStrategy;
@@ -49,8 +48,8 @@ public abstract class Config {
     private static String influxUrl;
     private static String influxDatabase;
     private static String influxMeasurement;
-    private static String influxUser;
-    private static String influxPassword;
+
+    private static String influxApiToken;
     private static String influxRetentionPolicy;
     private static boolean influxGzip;
     private static boolean influxBatch;
@@ -96,8 +95,7 @@ public abstract class Config {
         influxUrl = "http://localhost:8086";
         influxDatabase = "ruuvi";
         influxMeasurement = "ruuvi_measurements";
-        influxUser = "ruuvi";
-        influxPassword = "ruuvi";
+        influxApiToken = "apiToken";
         influxRetentionPolicy = "autogen";
         influxGzip = true;
         influxBatch = true;
@@ -141,8 +139,7 @@ public abstract class Config {
         influxUrl = props.getProperty("influxUrl", influxUrl);
         influxDatabase = props.getProperty("influxDatabase", influxDatabase);
         influxMeasurement = props.getProperty("influxMeasurement", influxMeasurement);
-        influxUser = props.getProperty("influxUser", influxUser);
-        influxPassword = props.getProperty("influxPassword", influxPassword);
+        influxApiToken = props.getProperty("influxApitToken", influxApiToken);
         measurementUpdateLimit = parseLong(props, "measurementUpdateLimit", measurementUpdateLimit);
         storageMethod = props.getProperty("storage.method", storageMethod);
         storageValues = props.getProperty("storage.values", storageValues);
@@ -359,8 +356,6 @@ public abstract class Config {
         switch (storageMethod) {
             case "influxdb":
                 return new InfluxDBConnection();
-            case "influxdb_legacy":
-                return new LegacyInfluxDBConnection();
             case "prometheus":
                 return new PrometheusExporter(getPrometheusHttpPort());
             case "dummy":
@@ -407,13 +402,7 @@ public abstract class Config {
         return influxMeasurement;
     }
 
-    public static String getInfluxUser() {
-        return influxUser;
-    }
-
-    public static String getInfluxPassword() {
-        return influxPassword;
-    }
+    public static String getInfluxApiToken() { return influxApiToken; }
 
     public static String getInfluxRetentionPolicy() {
         return influxRetentionPolicy;

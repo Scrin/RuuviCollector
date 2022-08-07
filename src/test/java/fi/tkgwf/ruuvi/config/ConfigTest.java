@@ -45,11 +45,6 @@ public class ConfigTest {
     }
 
     @Test
-    void testDefaultStringValue() {
-        assertEquals("ruuvi", Config.getInfluxUser());
-    }
-
-    @Test
     void testDefaultBooleanValue() {
         assertEquals(true, Config.isInfluxBatch());
     }
@@ -62,11 +57,6 @@ public class ConfigTest {
     @Test
     void testDefaultLongValue() {
         assertEquals(9900, Config.getMeasurementUpdateLimit());
-    }
-
-    @Test
-    void testOverriddenStringValue() {
-        assertEquals("testing", Config.getInfluxPassword());
     }
 
     @Test
@@ -108,20 +98,6 @@ public class ConfigTest {
         assertTrue(Config.getLimitingStrategy("F1E2D3C4B5A6") instanceof DefaultDiscardingWithMotionSensitivityStrategy);
 
         assertNull(Config.getLimitingStrategy("unknown should get null"));
-    }
-
-    @Test
-    void testRefreshingConfigOnTheFly() {
-        // Assert the default value:
-        assertEquals("ruuvi", Config.getInfluxUser());
-
-        // Load in a new value:
-        final Properties properties = new Properties();
-        properties.put("influxUser", "screw");
-        Config.readConfigFromProperties(properties);
-
-        // Test that it worked:
-        assertEquals("screw", Config.getInfluxUser());
     }
 
     @Test

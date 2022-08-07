@@ -1,16 +1,14 @@
 package fi.tkgwf.ruuvi.utils;
 
+import com.influxdb.client.domain.WritePrecision;
+import com.influxdb.client.write.Point;
 import fi.tkgwf.ruuvi.bean.EnhancedRuuviMeasurement;
 import fi.tkgwf.ruuvi.config.Config;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.StringUtils;
-import org.influxdb.dto.BatchPoints;
-import org.influxdb.dto.Point;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -45,7 +43,7 @@ public class InfluxDBConverter {
     }
 
     /**
-     * Converts a {@link EnhancedRuuviMeasurement} into an {@link org.influxdb.dto.Point}.
+     * Converts a {@link EnhancedRuuviMeasurement} into an {@link com.influxdb.client.write.Point}.
      *
      * @param measurement The measurement to convert
      * @param allowField A function that tells whether any given field of the given {@code RuuviMeasurement} should
@@ -53,18 +51,18 @@ public class InfluxDBConverter {
      * @return A {@code Point}, ready to be saved into InfluxDB
      */
     public static Point toInflux(EnhancedRuuviMeasurement measurement, Predicate<String> allowField) {
-        Point.Builder p = Point.measurement(Config.getInfluxMeasurement()).tag("mac", measurement.getMac());
+        Point p = Point.measurement(Config.getInfluxMeasurement()).addTag("mac", measurement.getMac());
         if (measurement.getName() != null) {
-            p.tag("name", measurement.getName());
+            p.addTag("name", measurement.getName());
         }
         if (measurement.getDataFormat() != null) {
-            p.tag("dataFormat", String.valueOf(measurement.getDataFormat()));
+            p.addTag("dataFormat", String.valueOf(measurement.getDataFormat()));
         }
         if (StringUtils.isNotBlank(measurement.getReceiver())) {
-            p.tag("receiver", measurement.getReceiver());
+            p.addTag("receiver", measurement.getReceiver());
         }
         if (measurement.getTime() != null) {
-            p.time(measurement.getTime(), TimeUnit.MILLISECONDS);
+            p.time(measurement.getTime(), WritePrecision.MS);
         }
         addValueIfAllowed(p, "temperature", measurement, EnhancedRuuviMeasurement::getTemperature, allowField);
         addValueIfAllowed(p, "humidity", measurement, EnhancedRuuviMeasurement::getHumidity, allowField);
@@ -85,10 +83,10 @@ public class InfluxDBConverter {
         addValueIfAllowed(p, "accelerationAngleFromX", measurement, EnhancedRuuviMeasurement::getAccelerationAngleFromX, allowField);
         addValueIfAllowed(p, "accelerationAngleFromY", measurement, EnhancedRuuviMeasurement::getAccelerationAngleFromY, allowField);
         addValueIfAllowed(p, "accelerationAngleFromZ", measurement, EnhancedRuuviMeasurement::getAccelerationAngleFromZ, allowField);
-        return p.build();
+        return p;
     }
 
-    private static void addValueIfAllowed(Point.Builder point,
+    private static void addValueIfAllowed(Point point,
                                           String name,
                                           EnhancedRuuviMeasurement measurement,
                                           Function<EnhancedRuuviMeasurement, ? extends Number> getter,
@@ -99,32 +97,13 @@ public class InfluxDBConverter {
         }
     }
 
-    public static BatchPoints toLegacyInflux(EnhancedRuuviMeasurement measurement) {
-        List<Point> points = new ArrayList<>();
-        createAndAddLegacyFormatPointIfNotNull(points, "temperature", measurement.getTemperature(), null, null);
-        createAndAddLegacyFormatPointIfNotNull(points, "humidity", measurement.getHumidity(), null, null);
-        createAndAddLegacyFormatPointIfNotNull(points, "pressure", measurement.getPressure(), null, null);
-        createAndAddLegacyFormatPointIfNotNull(points, "acceleration", measurement.getAccelerationX(), "axis", "x");
-        createAndAddLegacyFormatPointIfNotNull(points, "acceleration", measurement.getAccelerationY(), "axis", "y");
-        createAndAddLegacyFormatPointIfNotNull(points, "acceleration", measurement.getAccelerationZ(), "axis", "z");
-        createAndAddLegacyFormatPointIfNotNull(points, "acceleration", measurement.getAccelerationTotal(), "axis", "total");
-        createAndAddLegacyFormatPointIfNotNull(points, "batteryVoltage", measurement.getBatteryVoltage(), null, null);
-        createAndAddLegacyFormatPointIfNotNull(points, "rssi", measurement.getRssi(), null, null);
-        return BatchPoints
-            .database(Config.getInfluxDatabase())
-            .tag("protocolVersion", String.valueOf(measurement.getDataFormat()))
-            .tag("mac", measurement.getMac())
-            .points(points.toArray(new Point[points.size()]))
-            .build();
-    }
-
     private static void createAndAddLegacyFormatPointIfNotNull(List<Point> points, String measurement, Number value, String extraTagKey, String extraTagValue) {
         if (value != null) {
-            Point.Builder p = Point.measurement(measurement).addField("value", value);
+            Point p = Point.measurement(measurement).addField("value", value);
             if (extraTagValue != null) {
-                p.tag(extraTagKey, extraTagValue);
+                p.addTag(extraTagKey, extraTagValue);
             }
-            points.add(p.build());
+            points.add(p);
         }
     }
 }

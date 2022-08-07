@@ -1,11 +1,11 @@
 package fi.tkgwf.ruuvi;
 
+import com.influxdb.exceptions.InfluxException;
 import fi.tkgwf.ruuvi.service.PersistenceService;
 import fi.tkgwf.ruuvi.bean.HCIData;
 import fi.tkgwf.ruuvi.config.Config;
 import fi.tkgwf.ruuvi.handler.BeaconHandler;
 import fi.tkgwf.ruuvi.utils.HCIParser;
-import fi.tkgwf.ruuvi.utils.InfluxDataMigrator;
 import fi.tkgwf.ruuvi.utils.MeasurementValueCalculator;
 import fi.tkgwf.ruuvi.utils.Utils;
 import java.io.BufferedReader;
@@ -14,7 +14,6 @@ import java.io.InputStreamReader;
 import java.util.Arrays;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
-import org.influxdb.InfluxDBIOException;
 
 public class Main {
 
@@ -23,15 +22,10 @@ public class Main {
     private final BeaconHandler beaconHandler = new BeaconHandler();
 
     public static void main(String[] args) {
-        if (args.length >= 1 && args[0].equalsIgnoreCase("migrate")) {
-            InfluxDataMigrator migrator = new InfluxDataMigrator();
-            migrator.migrate();
-        } else {
-            Main m = new Main();
-            if (!m.run()) {
-                LOG.info("Unclean exit");
-                System.exit(1);
-            }
+        Main m = new Main();
+        if (!m.run()) {
+            LOG.info("Unclean exit");
+            System.exit(1);
         }
         LOG.info("Clean exit");
         System.exit(0); // due to a bug in the InfluxDB library, we have to force the exit as a
@@ -109,7 +103,7 @@ public class Main {
                             healthy = true;
                         }
                     }
-                } catch (InfluxDBIOException ex) {
+                } catch (InfluxException ex) {
                     LOG.error("Database connection lost while attempting to save measurements to InfluxDB", ex);
                     if (Config.exitOnInfluxDBIOException()) {
                         return false;

@@ -1,22 +1,22 @@
 package fi.tkgwf.ruuvi.db;
 
+import com.influxdb.client.InfluxDBClient;
+import com.influxdb.client.InfluxDBClientFactory;
+import com.influxdb.client.WriteApiBlocking;
+import com.influxdb.client.write.Point;
 import fi.tkgwf.ruuvi.bean.EnhancedRuuviMeasurement;
 import fi.tkgwf.ruuvi.config.Config;
 import fi.tkgwf.ruuvi.utils.InfluxDBConverter;
-import java.util.concurrent.TimeUnit;
-import org.influxdb.InfluxDB;
-import org.influxdb.InfluxDBFactory;
-import org.influxdb.dto.Point;
 
 public class InfluxDBConnection implements DBConnection {
 
-    private final InfluxDB influxDB;
+    private final InfluxDBClient influxDB;
 
     public InfluxDBConnection() {
         this(
                 Config.getInfluxUrl(),
-                Config.getInfluxUser(),
-                Config.getInfluxPassword(),
+                Config.getInfluxApiToken(),
+                "ruuvi",
                 Config.getInfluxDatabase(),
                 Config.getInfluxRetentionPolicy(),
                 Config.isInfluxGzip(),
@@ -28,32 +28,23 @@ public class InfluxDBConnection implements DBConnection {
 
     public InfluxDBConnection(
             String url,
-            String user,
-            String password,
-            String database,
+            String apiToken,
+            String org,
+            String bucket,
             String retentionPolicy,
             boolean gzip,
             boolean batch,
             int batchSize,
             int batchTime
     ) {
-        influxDB = InfluxDBFactory.connect(url, user, password).setDatabase(database).setRetentionPolicy(retentionPolicy);
-        if (gzip) {
-            influxDB.enableGzip();
-        } else {
-            influxDB.disableGzip();
-        }
-        if (batch) {
-            influxDB.enableBatch(batchSize, batchTime, TimeUnit.MILLISECONDS);
-        } else {
-            influxDB.disableBatch();
-        }
+        influxDB = InfluxDBClientFactory.create(url, apiToken.toCharArray(), org, bucket);
     }
 
     @Override
     public void save(EnhancedRuuviMeasurement measurement) {
         Point point = InfluxDBConverter.toInflux(measurement);
-        influxDB.write(point);
+        WriteApiBlocking writeApi = influxDB.getWriteApiBlocking();
+        writeApi.writePoint(point);
     }
 
     @Override
