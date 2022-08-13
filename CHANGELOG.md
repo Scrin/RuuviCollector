@@ -1,7 +1,8 @@
 # Changelog
 
-### [future/no source code changes]
+### v0.2.9
 
+-   Update ruuvitag-common-java dependency to v1.0.2 to fix a bug in N/A field detection
 -   Added sample service and setup scripts and related documentation (thanks anon8675309)
 
 ### v0.2.8
