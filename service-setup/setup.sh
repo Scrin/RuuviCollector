@@ -109,3 +109,8 @@ fi
 cp service-setup/lescan.service service-setup/ruuvicollector.service /etc/systemd/system
 systemctl enable lescan ruuvicollector
 systemctl start lescan ruuvicollector
+# And the watchdog service
+cp service-setup/lescan_watchdog.service service-setup/lescan_watchdog.timer /etc/systemd/system
+mv service-setup/lescan_watchdog.sh /usr/local/bin/
+sudo systemctl enable lescan_watchdog.timer
+sudo systemctl start lescan_watchdog.timer

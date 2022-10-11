@@ -1,0 +1,7 @@
+[Unit]
+Description=Make sure lescan is working
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/lescan_watchdog.sh

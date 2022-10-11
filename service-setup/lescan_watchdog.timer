@@ -1,0 +1,9 @@
+[Unit]
+Description=Check in every 15 minutes to make sure lescan is still working
+
+[Timer]
+OnCalendar=*:0/15
+Persistent=true
+
+[Install]
+WantedBy=timers.target
