@@ -1,0 +1,45 @@
+plugins {
+    id 'application'
+    id 'idea'
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+}
+
+group = 'fi.tkgwf.ruuvi'
+project.version = '0.2'
+
+sourceCompatibility = '11'
+targetCompatibility = 11
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven {
+        url "https://raw.github.com/Scrin/ruuvitag-common-java/mvn-repo/"
+    }
+}
+
+dependencies {
+    implementation "fi.tkgwf.ruuvi:ruuvitag-common:1.0.2"
+    implementation 'org.apache.commons:commons-lang3:3.12.0'
+    implementation 'org.apache.commons:commons-collections4:4.4'
+    implementation 'org.apache.logging.log4j:log4j-api:2.19.0'
+    implementation 'org.apache.logging.log4j:log4j-core:2.19.0'
+    implementation "log4j:apache-log4j-extras:1.2.17"
+    implementation 'org.influxdb:influxdb-java:2.23'
+    implementation "io.prometheus:simpleclient:0.9.0"
+    implementation "io.prometheus:simpleclient_httpserver:0.9.0"
+
+    //testImplementation "org.junit.platform:junit-platform-surefire-provider:1.2.0"
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
+
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
+}
+
+shadowJar {
+    archiveBaseName.set('ruuvi-collector')
+}
+
+application {
+    mainClassName = "fi.tkgwf.ruuvi.Main"
+}
