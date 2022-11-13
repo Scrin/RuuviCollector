@@ -105,6 +105,11 @@ if [ -n "$DB_NAME" ]; then
         /opt/ruuvicollector/ruuvi-collector.properties
 fi
 
+# Copy ruuvi-names.properties if it exists (and does not exist in the destination)
+if [ ! -f /opt/ruuvicollector/ruuvi-names.properties ] && [ -f ruuvi-names.properties ]; then
+    cp ruuvi-names.properties /opt/ruuvicollector
+fi
+
 # Now to set up the services
 cp service-setup/lescan.service service-setup/ruuvicollector.service /etc/systemd/system
 systemctl enable lescan ruuvicollector
