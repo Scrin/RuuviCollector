@@ -6,6 +6,11 @@ Type=simple
 # Ensure the bluetooth interface is in a good state prior to starting the scan
 ExecStartPre=/usr/bin/hciconfig reset
 ExecStart=/usr/bin/hcitool lescan --duplicates --passive
+# lescan prints each detected advert to stdout, which produces a lot of log
+# to the journal. RuuviCollector does not need the log, so throw away the output,
+# but do print errors.
+StandardOutput=null
+StandardError=journal
 Restart=always
 [Install]
 WantedBy=multi-user.target
