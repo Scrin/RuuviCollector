@@ -1,10 +1,6 @@
 package fi.tkgwf.ruuvi.config;
 
-import fi.tkgwf.ruuvi.db.DBConnection;
-import fi.tkgwf.ruuvi.db.DummyDBConnection;
-import fi.tkgwf.ruuvi.db.InfluxDBConnection;
-import fi.tkgwf.ruuvi.db.LegacyInfluxDBConnection;
-import fi.tkgwf.ruuvi.db.PrometheusExporter;
+import fi.tkgwf.ruuvi.db.*;
 import fi.tkgwf.ruuvi.strategy.LimitingStrategy;
 import fi.tkgwf.ruuvi.strategy.impl.DefaultDiscardingWithMotionSensitivityStrategy;
 import fi.tkgwf.ruuvi.strategy.impl.DiscardUntilEnoughTimeHasElapsedStrategy;
@@ -363,6 +359,8 @@ public abstract class Config {
                 return new LegacyInfluxDBConnection();
             case "prometheus":
                 return new PrometheusExporter(getPrometheusHttpPort());
+            case "slf4j":
+                return new SLF4JExporter();
             case "dummy":
                 return new DummyDBConnection();
             default:
