@@ -65,7 +65,8 @@ mvn clean package
 #### Automatic Setup
 
 Service scripts and other necessary stuff for "properly installing" this are
-available in the [service-setup](./service-setup/) directory.
+available in the [service-setup](./service-setup/) directory. This includes support for running multiple
+instances of RuuviCollector with separate configurations and databases (using the `-i` parameter).
 
 #### Manual Setup
 
