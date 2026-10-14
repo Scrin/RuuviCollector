@@ -1,0 +1,12 @@
+[Unit]
+Description=RuuviCollector Service (%i)
+DefaultDependencies=False
+After=network.target lescan.service
+[Service]
+Type=simple
+WorkingDirectory=/opt/ruuvicollector/%i
+ExecStart=/usr/bin/java -jar /opt/ruuvicollector/%i/ruuvi-collector-0.2.jar
+Restart=always
+Environment=RUUVI_INSTANCE=%i
+[Install]
+WantedBy=multi-user.target
